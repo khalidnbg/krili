@@ -34,3 +34,49 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+===================================================================================================================================================================
+
+## System architecture
+
+```mermaid
+graph TD
+  A[Tenant browser] --> C[Next.js app - Vercel]
+  B[Landlord browser] --> C
+  C --> D[Supabase - Postgres DB + Clerk]
+  C --> E[Cloudinary - listing photos, CDN]
+  D --> F[Admin moderation view - reports, listing review]
+```
+
+## User flows
+
+### 1. Landlord flow
+
+```mermaid
+flowchart TD
+  A[Sign up & verify - Email OTP] --> B[Create listing - Photos, price, terms]
+  B --> C[Listing status: pending - Awaiting admin review]
+  C -->|Approved| D[Published - Visible to tenants]
+  C -->|Changes needed| E[Rejected - Edit & resubmit, reason given]
+```
+
+### 2. Tenant flow
+
+```mermaid
+flowchart TD
+  A[Browse & filter - City, neighborhood, price, rooms] --> B[View listing - Photos, price, contact status]
+  B --> C[Sign up & verify - Email OTP]
+  B --> D[Report listing - Flag as suspicious]
+  C --> E[Reveal contact - Phone / WhatsApp link]
+```
+
+Reporting is a parallel path off viewing a listing — it should not require finishing the contact-reveal step, to keep reporting low-friction.
+
+### 3. Moderation flow (admin)
+
+```mermaid
+flowchart TD
+  A[New listing in queue - Status: pending review] --> B[Admin reviews - Photos, price, ownership signals]
+  B -->|Looks real| C[Approve - Listing goes live]
+  B -->|Suspicious| D[Reject - Notify landlord with reason]
+```
