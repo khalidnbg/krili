@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
+import { ensureProfile } from "@/lib/actions/profile";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -17,11 +18,14 @@ export const metadata: Metadata = {
 	description: "Real-time AI Teaching Platform",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+
+	await ensureProfile()
+
 	return (
 		<html lang="en" className={cn("font-sans", geist.variable)}>
 			<body className={`${bricolage.variable} antialiased`}>
