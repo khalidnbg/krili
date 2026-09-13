@@ -39,7 +39,7 @@ const ListingsList = ({ title, listings, classNames }: ListingsListProps) => {
 									<Link href={`/listings/${listing.id}`}>
 										<div className="flex items-center gap-2">
 											<div
-												className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden"
+												className="size-18 flex items-center justify-center rounded-lg max-md:hidden"
 												style={{ backgroundColor: getPropertyColor(listing.type) }}
 											>
 												<PropertyIcon type={listing.type} className="size-8" />
