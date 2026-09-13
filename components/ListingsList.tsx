@@ -7,7 +7,8 @@ import {
 	TableRow,
 } from "@/components/ui/table"
 import Link from "next/link"
-import { cn, getPropertyColor, getPropertyIcon } from "@/lib/utils"
+import PropertyIcon from "@/components/PropertyIcon"
+import { cn, getPropertyColor } from "@/lib/utils"
 
 interface ListingsListProps {
 	title: string
@@ -32,17 +33,16 @@ const ListingsList = ({ title, listings, classNames }: ListingsListProps) => {
 
 				<TableBody>
 					{listings?.map((listing) => {
-						const Icon = getPropertyIcon(listing.type)
 						return (
 							<TableRow key={listing.id}>
 								<TableCell>
-									<Link href={`/listing/${listing.id}`}>
+									<Link href={`/listings/${listing.id}`}>
 										<div className="flex items-center gap-2">
 											<div
 												className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden"
 												style={{ backgroundColor: getPropertyColor(listing.type) }}
 											>
-												<Icon className="size-8" />
+												<PropertyIcon type={listing.type} className="size-8" />
 											</div>
 											<div className="flex flex-col gap-2">
 												<p className="font-bold text-2xl">

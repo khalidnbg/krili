@@ -1,18 +1,21 @@
 import Link from "next/link"
-import Image from "next/image"
-import { notFound } from "next/navigation"
+import NotFound from "@/components/NotFound"
+import PropertyIcon from "@/components/PropertyIcon"
 import { allListings } from "@/constants"
-import { getPropertyColor, getPropertyIcon } from "@/lib/utils"
+import { getPropertyColor } from "@/lib/utils"
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
 	const listing = allListings.find((l) => l.id === id)
 
 	if (!listing) {
-		notFound()
+		return (
+			<main>
+				<NotFound />
+			</main>
+		)
 	}
 
-	const Icon = getPropertyIcon(listing.type)
 	const initial = listing.landlordName.charAt(0)
 
 	return (
@@ -27,7 +30,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 						className="h-64 flex items-center justify-center max-md:h-40"
 						style={{ backgroundColor: getPropertyColor(listing.type) }}
 					>
-						<Icon className="size-24 max-md:size-16" />
+						<PropertyIcon type={listing.type} className="size-24 max-md:size-16" />
 					</div>
 
 					<div className="flex flex-col gap-5 p-8">

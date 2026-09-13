@@ -1,7 +1,8 @@
-import { getPropertyColor, getPropertyIcon } from "@/lib/utils"
-import { MapPin } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
+import Image from "next/image"
+import { MapPin } from "lucide-react"
+import PropertyIcon from "@/components/PropertyIcon"
+import { getPropertyColor } from "@/lib/utils"
 
 interface ListingCardProps {
 	listing: Listing
@@ -9,7 +10,6 @@ interface ListingCardProps {
 
 const ListingCard = ({ listing }: ListingCardProps) => {
 	const { id, title, type, price, rooms, neighborhood, city, bookmarked } = listing
-	const Icon = getPropertyIcon(type)
 
 	return (
 		<article className="listing-card" style={{ backgroundColor: getPropertyColor(type) }}>
@@ -33,7 +33,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
 			</p>
 
 			<div className="flex items-center gap-1.5">
-				<Icon className="size-5" />
+				<PropertyIcon type={type} className="size-5" />
 				<p className="text-sm">
 					{rooms} room{rooms > 1 ? "s" : ""}
 				</p>

@@ -1,4 +1,3 @@
-import CTA from "@/components/CTA"
 import ListingCard from "@/components/ListingCard"
 import ListingsList from "@/components/ListingsList"
 import { featuredListings, recentListings } from "@/constants"

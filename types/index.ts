@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// Global type declarations — consumed across the app via the `@/*` path alias.
+
 type PropertyType = "house" | "studio" | "room" | "apartment"
 type ListingStatus = "pending" | "published" | "rejected" | "rented"
 type UserRole = "landlord" | "tenant" | "both"
