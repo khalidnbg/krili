@@ -63,7 +63,7 @@ const ListingForm = () => {
 					<Input
 						id="title"
 						placeholder="Ex. Bright studio in Maârif"
-						className="input"
+						aria-invalid={!!form.formState.errors.title}
 						{...form.register("title")}
 					/>
 					{form.formState.errors.title && (
@@ -78,7 +78,11 @@ const ListingForm = () => {
 						<Field data-invalid={!!form.formState.errors.type}>
 							<FieldLabel htmlFor="type">Property type</FieldLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
-								<SelectTrigger id="type" className="input capitalize">
+								<SelectTrigger
+									id="type"
+									className="w-full capitalize"
+									aria-invalid={!!form.formState.errors.type}
+								>
 									<SelectValue placeholder="Select the type" />
 								</SelectTrigger>
 								<SelectContent>
@@ -103,7 +107,7 @@ const ListingForm = () => {
 						type="number"
 						min={1}
 						placeholder="2"
-						className="input"
+						aria-invalid={!!form.formState.errors.rooms}
 						{...form.register("rooms")}
 					/>
 					{form.formState.errors.rooms && (
@@ -118,7 +122,7 @@ const ListingForm = () => {
 						type="number"
 						min={1}
 						placeholder="2500"
-						className="input"
+						aria-invalid={!!form.formState.errors.price}
 						{...form.register("price")}
 					/>
 					<FieldDescription>Monthly rent in Moroccan Dirham.</FieldDescription>
@@ -132,7 +136,7 @@ const ListingForm = () => {
 					<Input
 						id="neighborhood"
 						placeholder="Ex. Maârif"
-						className="input"
+						aria-invalid={!!form.formState.errors.neighborhood}
 						{...form.register("neighborhood")}
 					/>
 					{form.formState.errors.neighborhood && (
@@ -147,7 +151,11 @@ const ListingForm = () => {
 						<Field data-invalid={!!form.formState.errors.city}>
 							<FieldLabel htmlFor="city">City</FieldLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
-								<SelectTrigger id="city" className="input capitalize">
+								<SelectTrigger
+									id="city"
+									className="w-full capitalize"
+									aria-invalid={!!form.formState.errors.city}
+								>
 									<SelectValue placeholder="Select the city" />
 								</SelectTrigger>
 								<SelectContent>
@@ -191,7 +199,7 @@ const ListingForm = () => {
 							type="number"
 							min={0}
 							placeholder="3000"
-							className="input"
+							aria-invalid={!!form.formState.errors.cautionAmount}
 							{...form.register("cautionAmount")}
 						/>
 						{form.formState.errors.cautionAmount && (
