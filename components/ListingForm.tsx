@@ -1,16 +1,15 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form"
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldGroup,
+	FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -57,128 +56,121 @@ const ListingForm = () => {
 	}
 
 	return (
-		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-				<FormField
-					control={form.control}
-					name="title"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Listing title</FormLabel>
-							<FormControl>
-								<Input placeholder="Ex. Bright studio in Maârif" {...field} className="input" />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
+		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+			<FieldGroup>
+				<Field data-invalid={!!form.formState.errors.title}>
+					<FieldLabel htmlFor="title">Listing title</FieldLabel>
+					<Input
+						id="title"
+						placeholder="Ex. Bright studio in Maârif"
+						className="input"
+						{...form.register("title")}
+					/>
+					{form.formState.errors.title && (
+						<FieldError>{form.formState.errors.title.message}</FieldError>
 					)}
-				/>
+				</Field>
 
-				<FormField
+				<Controller
 					control={form.control}
 					name="type"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Property type</FormLabel>
-							<FormControl>
-								<Select
-									onValueChange={field.onChange}
-									value={field.value}
-									defaultValue={field.value}
-								>
-									<SelectTrigger className="input capitalize">
-										<SelectValue placeholder="Select the type" />
-									</SelectTrigger>
-									<SelectContent>
-										{propertyTypes.map((type) => (
-											<SelectItem value={type} key={type} className="capitalize">
-												{type}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
+						<Field data-invalid={!!form.formState.errors.type}>
+							<FieldLabel htmlFor="type">Property type</FieldLabel>
+							<Select value={field.value} onValueChange={field.onChange}>
+								<SelectTrigger id="type" className="input capitalize">
+									<SelectValue placeholder="Select the type" />
+								</SelectTrigger>
+								<SelectContent>
+									{propertyTypes.map((type) => (
+										<SelectItem value={type} key={type} className="capitalize">
+											{type}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{form.formState.errors.type && (
+								<FieldError>{form.formState.errors.type.message}</FieldError>
+							)}
+						</Field>
 					)}
 				/>
 
-				<FormField
-					control={form.control}
-					name="rooms"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Rooms</FormLabel>
-							<FormControl>
-								<Input type="number" min={1} placeholder="2" {...field} className="input" />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
+				<Field data-invalid={!!form.formState.errors.rooms}>
+					<FieldLabel htmlFor="rooms">Rooms</FieldLabel>
+					<Input
+						id="rooms"
+						type="number"
+						min={1}
+						placeholder="2"
+						className="input"
+						{...form.register("rooms")}
+					/>
+					{form.formState.errors.rooms && (
+						<FieldError>{form.formState.errors.rooms.message}</FieldError>
 					)}
-				/>
+				</Field>
 
-				<FormField
-					control={form.control}
-					name="price"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Rent per month (MAD)</FormLabel>
-							<FormControl>
-								<Input type="number" min={1} placeholder="2500" {...field} className="input" />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
+				<Field data-invalid={!!form.formState.errors.price}>
+					<FieldLabel htmlFor="price">Rent per month (MAD)</FieldLabel>
+					<Input
+						id="price"
+						type="number"
+						min={1}
+						placeholder="2500"
+						className="input"
+						{...form.register("price")}
+					/>
+					<FieldDescription>Monthly rent in Moroccan Dirham.</FieldDescription>
+					{form.formState.errors.price && (
+						<FieldError>{form.formState.errors.price.message}</FieldError>
 					)}
-				/>
+				</Field>
 
-				<FormField
-					control={form.control}
-					name="neighborhood"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Neighborhood</FormLabel>
-							<FormControl>
-								<Input placeholder="Ex. Maârif" {...field} className="input" />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
+				<Field data-invalid={!!form.formState.errors.neighborhood}>
+					<FieldLabel htmlFor="neighborhood">Neighborhood</FieldLabel>
+					<Input
+						id="neighborhood"
+						placeholder="Ex. Maârif"
+						className="input"
+						{...form.register("neighborhood")}
+					/>
+					{form.formState.errors.neighborhood && (
+						<FieldError>{form.formState.errors.neighborhood.message}</FieldError>
 					)}
-				/>
+				</Field>
 
-				<FormField
+				<Controller
 					control={form.control}
 					name="city"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel>City</FormLabel>
-							<FormControl>
-								<Select
-									onValueChange={field.onChange}
-									value={field.value}
-									defaultValue={field.value}
-								>
-									<SelectTrigger className="input capitalize">
-										<SelectValue placeholder="Select the city" />
-									</SelectTrigger>
-									<SelectContent>
-										{cities.map((cities) => (
-											<SelectItem value={cities} key={cities} className="capitalize">
-												{cities}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
+						<Field data-invalid={!!form.formState.errors.city}>
+							<FieldLabel htmlFor="city">City</FieldLabel>
+							<Select value={field.value} onValueChange={field.onChange}>
+								<SelectTrigger id="city" className="input capitalize">
+									<SelectValue placeholder="Select the city" />
+								</SelectTrigger>
+								<SelectContent>
+									{cities.map((city) => (
+										<SelectItem value={city} key={city} className="capitalize">
+											{city}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{form.formState.errors.city && (
+								<FieldError>{form.formState.errors.city.message}</FieldError>
+							)}
+						</Field>
 					)}
 				/>
 
-				<FormField
+				<Controller
 					control={form.control}
 					name="hasCaution"
 					render={({ field }) => (
-						<FormItem>
-							<FormLabel className="flex items-center gap-2 cursor-pointer">
+						<Field>
+							<FieldLabel className="flex items-center gap-2 cursor-pointer">
 								<input
 									type="checkbox"
 									checked={field.value}
@@ -186,31 +178,31 @@ const ListingForm = () => {
 									className="size-4 accent-black"
 								/>
 								Security deposit (caution)
-							</FormLabel>
-							<FormMessage />
-						</FormItem>
+							</FieldLabel>
+						</Field>
 					)}
 				/>
 
 				{form.watch("hasCaution") && (
-					<FormField
-						control={form.control}
-						name="cautionAmount"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Caution amount (MAD)</FormLabel>
-								<FormControl>
-									<Input type="number" min={0} placeholder="3000" {...field} className="input" />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
+					<Field data-invalid={!!form.formState.errors.cautionAmount}>
+						<FieldLabel htmlFor="cautionAmount">Caution amount (MAD)</FieldLabel>
+						<Input
+							id="cautionAmount"
+							type="number"
+							min={0}
+							placeholder="3000"
+							className="input"
+							{...form.register("cautionAmount")}
+						/>
+						{form.formState.errors.cautionAmount && (
+							<FieldError>{form.formState.errors.cautionAmount.message}</FieldError>
 						)}
-					/>
+					</Field>
 				)}
 
 				<Button type="submit" className="w-full cursor-pointer">Publish Listing</Button>
-			</form>
-		</Form>
+			</FieldGroup>
+		</form>
 	)
 }
 
