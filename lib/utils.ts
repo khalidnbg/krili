@@ -1,14 +1,30 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { subjectsColors, voices } from "@/constants";
+import { propertyColors } from "@/constants";
+import { Home, Building2, DoorOpen, Sofa } from "lucide-react";
 // import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const getSubjectColor = (subject: string) => {
-  return subjectsColors[subject as keyof typeof subjectsColors];
+export const getPropertyColor = (propertyType: string) => {
+  return propertyColors[propertyType as keyof typeof propertyColors] ?? "#f5f5f5";
+};
+
+export const getPropertyIcon = (type: string) => {
+  switch (type) {
+    case "house":
+      return Home;
+    case "apartment":
+      return Building2;
+    case "room":
+      return DoorOpen;
+    case "studio":
+      return Sofa;
+    default:
+      return Home;
+  }
 };
 
 // export const configureAssistant = (voice: string, style: string) => {

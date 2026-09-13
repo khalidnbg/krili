@@ -1,82 +1,50 @@
-// type User = {
-//   name: string;
-//   email: string;
-//   image?: string;
-//   accountId: string;
-// };
-
-enum Subject {
-	maths = "maths",
-	language = "language",
-	science = "science",
-	history = "history",
-	coding = "coding",
-	geography = "geography",
-	economics = "economics",
-	finance = "finance",
-	business = "business",
-}
+type PropertyType = "house" | "studio" | "room" | "apartment"
+type ListingStatus = "pending" | "published" | "rejected" | "rented"
+type UserRole = "landlord" | "tenant" | "both"
 
 type Listing = {
-	id: string;
-	name: string;
-	subject: string;
-	topic: string;
-	duration: number;
-	bookmarked: boolean;
-};
-
-interface CreateCompanion {
-	name: string;
-	subject: string;
-	topic: string;
-	voice: string;
-	style: string;
-	duration: number;
+	id: string
+	title: string
+	type: PropertyType
+	price: number
+	rooms: number
+	neighborhood: string
+	city: string
+	description: string
+	landlordName: string
+	hasCaution: boolean
+	cautionAmount?: number
+	bookmarked: boolean
 }
 
-interface GetAllCompanions {
-	limit?: number;
-	page?: number;
-	subject?: string | string[];
-	topic?: string | string[];
+interface CreateListing {
+	title: string
+	type: PropertyType
+	rooms: number
+	price: number
+	neighborhood: string
+	city: string
+	hasCaution: boolean
+	cautionAmount?: number
 }
 
-interface BuildClient {
-	key?: string;
-	sessionToken?: string;
-}
-
-interface CreateUser {
-	email: string;
-	name: string;
-	image?: string;
-	accountId: string;
+interface GetAllListings {
+	limit?: number
+	page?: number
+	type?: string | string[]
+	city?: string | string[]
+	rooms?: number
+	minPrice?: number
+	maxPrice?: number
 }
 
 interface SearchParams {
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 interface Avatar {
-	userName: string;
-	width: number;
-	height: number;
-	className?: string;
-}
-
-interface SavedMessage {
-	role: "user" | "system" | "assistant";
-	content: string;
-}
-
-interface CompanionComponentProps {
-	companionId: string;
-	subject: string;
-	topic: string;
-	name: string;
-	userName: string;
-	userImage: string;
-	voice: string;
-	style: string;
+	userName: string
+	width: number
+	height: number
+	className?: string
 }

@@ -14,8 +14,8 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-	title: "Converso",
-	description: "Real-time AI Teaching Platform",
+	title: "Krili — Houses, Studios & Rooms for Rent",
+	description: "Find and post house, studio and room rental listings across Morocco.",
 };
 
 export default async function RootLayout({

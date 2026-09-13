@@ -1,26 +1,23 @@
+import { getPropertyColor, getPropertyIcon } from "@/lib/utils"
+import { MapPin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
 interface ListingCardProps {
-	id: string
-	name: string
-	topic: string
-	color: string
-	subject: string
-	duration?: string
+	listing: Listing
 }
 
-const ListingCard = ({ id, name, topic, color, subject, duration }: ListingCardProps) => {
+const ListingCard = ({ listing }: ListingCardProps) => {
+	const { id, title, type, price, rooms, neighborhood, city, bookmarked } = listing
+	const Icon = getPropertyIcon(type)
+
 	return (
-		<article className="listing-card" style={{ backgroundColor: color }}>
+		<article className="listing-card" style={{ backgroundColor: getPropertyColor(type) }}>
 			<div className="flex justify-between items-center">
-				<div className="subject-badge">{subject}</div>
-				<button className="listing-bookmark" >
+				<div className="property-badge">{type}</div>
+				<button className="listing-bookmark" aria-label="Save listing">
 					<Image
-						// src={
-						// 	bookmarked ? "/icons/bookmark-filled.svg" : "/icons/bookmark.svg"
-						// }
-						src="/icons/bookmark.svg"
+						src={bookmarked ? "/icons/bookmark-filled.svg" : "/icons/bookmark.svg"}
 						alt="bookmark"
 						width={12.5}
 						height={15}
@@ -28,21 +25,28 @@ const ListingCard = ({ id, name, topic, color, subject, duration }: ListingCardP
 				</button>
 			</div>
 
-			<h2 className="text-2xl font-bold">{name}</h2>
-			<p className="text-sm">{topic}</p>
-			<div className="flex items-center gap-2">
-				<Image
-					src="/icons/clock.svg"
-					alt="duration"
-					width={13.5}
-					height={13.5}
-				/>
-				<p className="text-sm">{duration} minutes</p>
+			<h2 className="text-2xl font-bold">{title}</h2>
+
+			<p className="text-sm flex items-center gap-1.5">
+				<MapPin className="size-4" />
+				{neighborhood}, {city}
+			</p>
+
+			<div className="flex items-center gap-1.5">
+				<Icon className="size-5" />
+				<p className="text-sm">
+					{rooms} room{rooms > 1 ? "s" : ""}
+				</p>
 			</div>
+
+			<p className="text-xl font-bold">
+				{price.toLocaleString()}
+				<span className="text-sm font-normal"> MAD/month</span>
+			</p>
 
 			<Link href={`/listings/${id}`} className="w-full">
 				<button className="btn-primary w-full justify-center">
-					Launch Lesson
+					View Details
 				</button>
 			</Link>
 		</article>
