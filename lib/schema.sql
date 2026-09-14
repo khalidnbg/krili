@@ -176,3 +176,5 @@ select using (
 -- Neighborhoods: public read
 create policy "Anyone can view neighborhoods" on public.neighborhoods for
 select using (true);
+create policy "Signed-in users can add neighborhoods" on public.neighborhoods for
+insert with check (auth.jwt()->>'sub' is not null);
