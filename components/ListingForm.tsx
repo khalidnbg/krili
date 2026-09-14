@@ -1,8 +1,10 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
+import { Button } from "@/components/ui/button"
 import {
 	Field,
 	FieldDescription,
@@ -11,7 +13,6 @@ import {
 	FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import {
 	Select,
 	SelectContent,
@@ -20,24 +21,19 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import { cities, propertyTypes } from "@/constants"
-
-const formSchema = z.object({
-	title: z.string().min(1, { message: "Title is required." }),
-	type: z.string().min(1, { message: "Property type is required." }),
-	rooms: z.coerce.number().min(1, { message: "Rooms must be at least 1." }),
-	price: z.coerce.number().min(1, { message: "Price is required." }),
-	neighborhood: z.string().min(1, { message: "Neighborhood is required." }),
-	city: z.string().min(1, { message: "City is required." }),
-	hasCaution: z.boolean(),
-	cautionAmount: z.coerce.number().optional(),
-})
+import { createListing } from "@/lib/actions/listing.action"
+import { listingSchema } from "@/lib/schema"
 
 const ListingForm = () => {
-	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
+	const router = useRouter()
+
+	const form = useForm<z.infer<typeof listingSchema>>({
+		resolver: zodResolver(listingSchema),
 		defaultValues: {
 			title: "",
-			type: "",
+			// enum-typed field: "" only marks the select as unselected and is
+			// rejected by zodResolver before this can ever be submitted.
+			type: "" as PropertyType,
 			rooms: 1,
 			price: 1500,
 			neighborhood: "",
@@ -47,12 +43,15 @@ const ListingForm = () => {
 		},
 	})
 
-	const onSubmit = async (values: z.infer<typeof formSchema>) => {
-		// TODO: persist with a createListing server action (Supabase `listings` insert)
-		console.log({
-			...values,
-			cautionAmount: values.hasCaution ? values.cautionAmount : undefined,
-		})
+	const onSubmit = async (values: z.infer<typeof listingSchema>) => {
+		const listing = await createListing(values)
+
+		if (listing) {
+			router.push(`/listings/${listing.id}`)
+		} else {
+			console.error("Failed to create listing")
+			router.push("/")
+		}
 	}
 
 	return (
@@ -214,4 +213,4 @@ const ListingForm = () => {
 	)
 }
 
-export default ListingForm;
+export default ListingForm
