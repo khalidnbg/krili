@@ -23,9 +23,12 @@ import {
 import { cities, propertyTypes } from "@/constants"
 import { createListing } from "@/lib/actions/listing.action"
 import { listingSchema } from "@/lib/schema"
+import PhotoUploader, { PhotoUploaderState } from "./PhotoUploader"
+import { useState } from "react"
 
 const ListingForm = () => {
 	const router = useRouter()
+	const [photos, setPhotos] = useState<PhotoUploaderState>({ files: [], coverIndex: 0 })
 
 	const form = useForm<z.infer<typeof listingSchema>>({
 		resolver: zodResolver(listingSchema),
@@ -44,6 +47,14 @@ const ListingForm = () => {
 	})
 
 	const onSubmit = async (values: z.infer<typeof listingSchema>) => {
+		if (photos.files.length) {
+			console.log("Photos ready for upload : ", {
+				count: photos.files.length,
+				coverIndex: photos.coverIndex,
+				names: photos.files.map((file) => file.name),
+			})
+		}
+
 		const listing = await createListing(values)
 
 		if (listing) {
@@ -206,6 +217,14 @@ const ListingForm = () => {
 						)}
 					</Field>
 				)}
+
+				<Field>
+					<FieldLabel>Photos</FieldLabel>
+					<PhotoUploader onChange={setPhotos} max={5} maxSizeMB={5} />
+					<FieldDescription>
+						Add up to 5 photos — the first one is used as the cover on cards.
+					</FieldDescription>
+				</Field>
 
 				<Button type="submit" className="w-full cursor-pointer">Publish Listing</Button>
 			</FieldGroup>
