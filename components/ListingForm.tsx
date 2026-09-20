@@ -47,15 +47,7 @@ const ListingForm = () => {
 	})
 
 	const onSubmit = async (values: z.infer<typeof listingSchema>) => {
-		if (photos.files.length) {
-			console.log("Photos ready for upload : ", {
-				count: photos.files.length,
-				coverIndex: photos.coverIndex,
-				names: photos.files.map((file) => file.name),
-			})
-		}
-
-		const listing = await createListing(values)
+		const listing = await createListing(values, photos.files, photos.coverIndex)
 
 		if (listing) {
 			router.push(`/listings/${listing.id}`)

@@ -9,3 +9,8 @@ export function cn(...inputs: ClassValue[]) {
 export const getPropertyColor = (propertyType: string) => {
   return propertyColors[propertyType as keyof typeof propertyColors] ?? "#f5f5f5";
 };
+
+export const getCoverPhotoUrl = (listing: Listing) => {
+  const photos = listing.photos ?? [];
+  return photos.find((photo) => photo.is_cover)?.url ?? photos[0]?.url;
+};

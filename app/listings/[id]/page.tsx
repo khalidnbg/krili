@@ -3,10 +3,57 @@ import NotFound from "@/components/NotFound"
 import PropertyIcon from "@/components/PropertyIcon"
 import { allListings } from "@/constants"
 import { getPropertyColor } from "@/lib/utils"
+import { createSupabaseClient } from "@/lib/supabase"
+import ListingPhotoGallery from "@/components/ListingPhotoGallery"
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
-	const listing = allListings.find((l) => l.id === id)
+
+	// Try the database first (listings created through the form live there),
+	// and fall back to the shipped sample data otherwise.
+	const supabase = createSupabaseClient()
+
+	const { data: row } = await supabase
+		.from("listings")
+		.select(
+			"id, title, price_mad, rooms, has_caution, caution_amount, property_type, neighborhoods(city, name), listing_photos(url, sort_order, is_cover)"
+		)
+		.eq("id", id)
+		.maybeSingle()
+
+	// supabase-js types "neighborhoods(...)" as an array, whereas PostgREST
+	// returns a single object for the many-to-one FK — normalize both shapes.
+	type EmbeddedNeighborhood = { city?: string; name?: string }
+
+	const rawNeighborhood =
+		row?.neighborhoods as unknown as EmbeddedNeighborhood | EmbeddedNeighborhood[] | null
+	const neighborhood = Array.isArray(rawNeighborhood) ? rawNeighborhood[0] : rawNeighborhood
+
+	const listing: Listing | undefined = row
+		? {
+			id: row.id,
+			title: row.title,
+			type: (row.property_type as PropertyType) || "house",
+			price: row.price_mad,
+			rooms: row.rooms,
+			neighborhood: neighborhood?.name ?? "",
+			city: neighborhood?.city ?? "",
+			description: "",
+			landlordName: "Landlord",
+			hasCaution: row.has_caution,
+			cautionAmount: row.caution_amount,
+			bookmarked: false,
+			photos: (row.listing_photos ?? [])
+				.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+				.map((photo) => ({
+					url: photo.url,
+					sort_order: photo.sort_order ?? 0,
+					is_cover: photo.is_cover ?? false,
+				})),
+		}
+		: allListings.find((l) => l.id === id)
+
+
 
 	if (!listing) {
 		return (
@@ -26,12 +73,19 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
 			<section className="w-full">
 				<article className="rounded-4xl border border-black overflow-hidden">
-					<div
-						className="h-64 flex items-center justify-center max-md:h-40"
-						style={{ backgroundColor: getPropertyColor(listing.type) }}
-					>
-						<PropertyIcon type={listing.type} className="size-24 max-md:size-16" />
-					</div>
+					{listing.photos && listing.photos.length > 0 ? (
+						<ListingPhotoGallery
+							photos={listing.photos.map(({ url, is_cover }) => ({ url, is_cover }))}
+							title={listing.title}
+						/>
+					) : (
+						<div
+							className="h-64 flex items-center justify-center max-md:h-40"
+							style={{ backgroundColor: getPropertyColor(listing.type) }}
+						>
+							<PropertyIcon type={listing.type} className="size-24 max-md:size-16" />
+						</div>
+					)}
 
 					<div className="flex flex-col gap-5 p-8">
 						<div className="flex justify-between items-start gap-4 flex-wrap">

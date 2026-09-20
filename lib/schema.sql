@@ -178,3 +178,11 @@ create policy "Anyone can view neighborhoods" on public.neighborhoods for
 select using (true);
 create policy "Signed-in users can add neighborhoods" on public.neighborhoods for
 insert with check (auth.jwt()->>'sub' is not null);
+-- Listing photos are stored on Cloudinary (see .env) and referenced from the
+-- listing_photos table (url = Cloudinary secure_url, sort_order = index,
+-- is_cover = the user-picked cover).
+-- Required so the detail page can render DB-created listings:
+alter table public.listings
+add column property_type text check (
+		property_type in ('house', 'studio', 'room', 'apartment')
+	);

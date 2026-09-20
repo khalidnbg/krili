@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { MapPin } from "lucide-react"
 import PropertyIcon from "@/components/PropertyIcon"
-import { getPropertyColor } from "@/lib/utils"
+import { getPropertyColor, getCoverPhotoUrl } from "@/lib/utils"
 
 interface ListingCardProps {
 	listing: Listing
@@ -10,6 +10,7 @@ interface ListingCardProps {
 
 const ListingCard = ({ listing }: ListingCardProps) => {
 	const { id, title, type, price, rooms, neighborhood, city, bookmarked } = listing
+	const cover = getCoverPhotoUrl(listing)
 
 	return (
 		<article className="listing-card" style={{ backgroundColor: getPropertyColor(type) }}>
@@ -24,6 +25,14 @@ const ListingCard = ({ listing }: ListingCardProps) => {
 					/>
 				</button>
 			</div>
+
+			{cover && (
+				<div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src={cover} alt={title} className="h-full w-full object-cover" />
+				</div>
+			)}
+
 
 			<h2 className="text-2xl font-bold">{title}</h2>
 

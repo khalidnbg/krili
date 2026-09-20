@@ -5,6 +5,12 @@ type PropertyType = "house" | "studio" | "room" | "apartment"
 type ListingStatus = "pending" | "published" | "rejected" | "rented"
 type UserRole = "landlord" | "tenant" | "both"
 
+type ListingPhoto = {
+	url: string
+	sort_order: number
+	is_cover: boolean
+}
+
 type Listing = {
 	id: string
 	title: string
@@ -18,6 +24,7 @@ type Listing = {
 	hasCaution: boolean
 	cautionAmount?: number
 	bookmarked: boolean
+	photos?: ListingPhoto[]
 }
 
 interface CreateListing {
