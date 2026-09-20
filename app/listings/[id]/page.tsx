@@ -53,8 +53,6 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 		}
 		: allListings.find((l) => l.id === id)
 
-
-
 	if (!listing) {
 		return (
 			<main>
@@ -66,13 +64,13 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const initial = listing.landlordName.charAt(0)
 
 	return (
-		<main>
+		<main className="flex-1 min-h-0 overflow-hidden flex flex-col">
 			<Link href="/" className="btn-signin w-fit">
 				← All listings
 			</Link>
 
-			<section className="w-full">
-				<article className="rounded-4xl  border-black overflow-hidden">
+			<section className="w-full flex-1 min-h-0 overflow-y-auto">
+				<article className="rounded-4xl border-black overflow-hidden">
 					{listing.photos && listing.photos.length > 0 ? (
 						<ListingPhotoGallery
 							photos={listing.photos.map(({ url, is_cover }) => ({ url, is_cover }))}

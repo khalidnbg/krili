@@ -1,7 +1,7 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
-import { createSupabaseClient } from "../supabase";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { } from "@/components/ListingForm";
 import { ListingFormValues, listingSchema } from "../schema";
 import { createHash } from "node:crypto";
@@ -9,6 +9,11 @@ import { createHash } from "node:crypto";
 type EmbeddedNeighborhood = {
 	city?: string
 	name?: string
+}
+
+const adminSupabase = () => {
+	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null
+	return createServiceRoleClient()
 }
 
 async function uploadPhotoToCloudinary(file: File, publicId: string) {
@@ -240,4 +245,106 @@ export const fetchListings = async () => {
 				})),
 		} satisfies Listing
 	})
+}
+
+export const isAdmin = async () => {
+	const user = await currentUser()
+	if (!user) return false
+
+	// Clerk dashboard → public metadata {"role": "admin"}
+	if (user.publicMetadata?.role === "admin") return true
+
+	// ...or an explicit allow-list in .env
+	const admins = (process.env.ADMIN_USER_IDS ?? "")
+		.split(",")
+		.map((id) => id.trim())
+		.filter(Boolean)
+	return admins.includes(user.id)
+}
+
+export async function getModerationQueue(): Promise<ModerationListing[] | null> {
+	if (!(await isAdmin())) return null
+	const supabase = adminSupabase()
+	if (!supabase) {
+		console.error("getModerationQueue: SUPABASE_SERVICE_ROLE_KEY is not set")
+		return null
+	}
+
+	const { data, error } = await supabase
+		.from("listings")
+		.select(`
+			id, title, price_mad, rooms, has_caution, caution_amount, property_type,
+			status, rejection_reason, landlord_id, created_at,
+			neighborhoods(city, name),
+			listing_photos(url, sort_order, is_cover)
+		`)
+		.in("status", ["pending", "rejected"])
+		.order("created_at", { ascending: false })
+
+	console.log("data : ", data)
+
+	if (error) {
+		console.error("getModerationQueue failed:", error.message)
+		return null
+	}
+
+	return (data ?? []).map((row: any) => {
+		// supabase-js types embeds as arrays; PostgREST returns objects here.
+		const rawNeighborhood = row.neighborhoods as unknown as
+			| EmbeddedNeighborhood
+			| EmbeddedNeighborhood[]
+			| null
+		const neighborhood = Array.isArray(rawNeighborhood) ? rawNeighborhood[0] : rawNeighborhood
+
+		return {
+			id: row.id,
+			title: row.title,
+			type: (row.property_type as PropertyType) || "house",
+			price: row.price_mad,
+			rooms: row.rooms,
+			neighborhood: neighborhood?.name ?? "",
+			city: neighborhood?.city ?? "",
+			status: row.status as ListingStatus,
+			rejectionReason: row.rejection_reason as string | null,
+			landlordId: row.landlord_id,
+			createdAt: row.created_at,
+			photos: (row.listing_photos ?? [])
+				.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+				.map((photo: any) => ({
+					url: photo.url,
+					sort_order: photo.sort_order ?? 0,
+					is_cover: photo.is_cover ?? false,
+				})),
+		} satisfies ModerationListing
+	})
+}
+
+export type AdminActionResult = { ok: boolean; error?: string }
+
+export async function approveListing(id: string): Promise<AdminActionResult> {
+	if (!(await isAdmin())) return { ok: false, error: "Forbidden" }
+	const supabase = adminSupabase()
+	if (!supabase) return { ok: false, error: "Service role key not configured" }
+
+	const { error } = await supabase
+		.from("listings")
+		.update({ status: "published", rejection_reason: null })
+		.eq("id", id)
+
+	return error ? { ok: false, error: error.message } : { ok: true }
+}
+
+export async function rejectListing(id: string, reason: string): Promise<AdminActionResult> {
+	if (!(await isAdmin())) return { ok: false, error: "Forbidden" }
+	const trimmed = reason.trim()
+	if (!trimmed) return { ok: false, error: "A rejection reason is required." }
+	const supabase = adminSupabase()
+	if (!supabase) return { ok: false, error: "Service role key not configured" }
+
+	const { error } = await supabase
+		.from("listings")
+		.update({ status: "rejected", rejection_reason: trimmed })
+		.eq("id", id)
+
+	return error ? { ok: false, error: error.message } : { ok: true }
 }

@@ -27,6 +27,21 @@ type Listing = {
 	photos?: ListingPhoto[]
 }
 
+type ModerationListing = {
+	id: string
+	title: string
+	type: PropertyType
+	price: number
+	rooms: number
+	neighborhood: string
+	city: string
+	status: ListingStatus
+	rejectionReason: string | null
+	landlordId: string
+	createdAt: string
+	photos: ListingPhoto[]
+}
+
 interface CreateListing {
 	title: string
 	type: PropertyType
