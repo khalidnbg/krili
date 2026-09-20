@@ -27,7 +27,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
 			</div>
 
 			{cover && (
-				<div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
+				<div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img src={cover} alt={title} className="h-full w-full object-cover" />
 				</div>

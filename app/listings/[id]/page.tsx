@@ -72,7 +72,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			</Link>
 
 			<section className="w-full">
-				<article className="rounded-4xl border border-black overflow-hidden">
+				<article className="rounded-4xl  border-black overflow-hidden">
 					{listing.photos && listing.photos.length > 0 ? (
 						<ListingPhotoGallery
 							photos={listing.photos.map(({ url, is_cover }) => ({ url, is_cover }))}
