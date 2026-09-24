@@ -5,9 +5,13 @@ import { allListings } from "@/constants"
 import { getPropertyColor } from "@/lib/utils"
 import { createSupabaseClient } from "@/lib/supabase"
 import ListingPhotoGallery from "@/components/ListingPhotoGallery"
+import { auth } from "@clerk/nextjs/server"
+import ContactReveal from "@/components/ContactReveal"
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
+
+	const { userId } = await auth()
 
 	// Try the database first (listings created through the form live there),
 	// and fall back to the shipped sample data otherwise.
@@ -63,6 +67,17 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
 	const initial = listing.landlordName.charAt(0)
 
+	let initialRevealed = false
+	if (userId && listing) {
+		const { data: reveal } = await supabase
+			.from("contact_reveals")
+			.select("id")
+			.eq("listing_id", listing.id)
+			.eq("tenant_id", userId)
+			.maybeSingle()
+		initialRevealed = !!reveal
+	}
+
 	return (
 		<main className="flex-1 min-h-0 overflow-hidden flex flex-col">
 			<Link href="/" className="btn-signin w-fit">
@@ -115,22 +130,23 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 								: "No security deposit required."}
 						</p>
 
-						<div className="rounded-4xl border border-black p-6 flex justify-between items-center gap-4 flex-wrap">
-							<div className="flex items-center gap-3">
-								<div className="size-12 rounded-full bg-black text-white flex items-center justify-center font-bold text-xl">
+						<div className="rounded-3xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md flex justify-between items-center gap-4 flex-wrap">
+							<div className="flex items-center gap-4">
+								<div className="size-12 shrink-0 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-bold text-xl shadow-sm">
 									{initial}
 								</div>
 								<div className="flex flex-col">
-									<p className="font-bold">{listing.landlordName}</p>
+									<p className="font-semibold tracking-tight">{listing.landlordName}</p>
 									<p className="text-sm text-muted-foreground">Verified landlord</p>
 								</div>
 							</div>
-							<button className="btn-primary">Contact landlord</button>
+
+							<ContactReveal listingId={listing.id} initialRevealed={initialRevealed} />
 						</div>
 					</div>
 				</article>
 			</section>
-		</main>
+		</main >
 	)
 }
 
