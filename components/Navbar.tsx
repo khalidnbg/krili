@@ -31,12 +31,10 @@ const Navbar = () => {
 
 			<div className="flex items-center gap-4">
 				<Show when="signed-in">
+					<Link href="/bookmarks" className="btn-signin">Saved</Link>
 					<Link href="/dashboard" className="btn-signin">My listings</Link>
-					{!isNewListingPage && (
-						<Link href="/listings/new" className="btn-signin">List a property</Link>
-					)}
+					{!isNewListingPage && <Link href="/listings/new" className="btn-signin">List a property</Link>}
 				</Show>
-
 
 				<Show when="signed-out">
 					<SignUpButton>

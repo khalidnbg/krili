@@ -1,10 +1,12 @@
 import ListingCard from "@/components/ListingCard";
 import ListingFilters from "@/components/ListingFilters";
+import { getSavedListingIds } from "@/lib/actions/bookmarks.action";
 import { createSupabaseClient } from "@/lib/supabase";
 import Link from "next/link";
 
 type EmbeddedNeighborhood = { city?: string; name?: string }
 
+const savedIds = new Set(await getSavedListingIds())
 
 const Page = async ({ searchParams }: SearchParams) => {
 	const params = await searchParams
@@ -50,7 +52,6 @@ const Page = async ({ searchParams }: SearchParams) => {
 		console.error("listings search failed:", error.message)
 	}
 
-
 	const listings = (data ?? [])
 		.map((row) => {
 			// city lives on the joined neighborhoods row, so filter it post-query.
@@ -83,6 +84,8 @@ const Page = async ({ searchParams }: SearchParams) => {
 		})
 		.filter((listing) => !city || listing.city === city)
 
+	console.log(savedIds)
+
 	return (
 		<main>
 			<section className="flex flex-col gap-2">
@@ -113,7 +116,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 			) : (
 				<section className="listings-grid">
 					{listings.map((listing) => (
-						<ListingCard key={listing.id} listing={listing} />
+						<ListingCard key={listing.id} listing={listing} initialSaved={savedIds.has(listing.id)} />
 					))}
 				</section>
 			)}

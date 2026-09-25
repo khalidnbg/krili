@@ -186,3 +186,29 @@ alter table public.listings
 add column property_type text check (
 		property_type in ('house', 'studio', 'room', 'apartment')
 	);
+create table public.saved_listings (
+	id uuid primary key default gen_random_uuid(),
+	profile_id text not null references public.profiles(id) on delete cascade,
+	listing_id uuid not null references public.listings(id) on delete cascade,
+	created_at timestamptz not null default now(),
+	unique (profile_id, listing_id)
+);
+alter table public.saved_listings enable row level security;
+create policy "Users can view own saved listings" on public.saved_listings for
+select using (
+		(
+			select auth.jwt()->>'sub'
+		) = profile_id
+	);
+create policy "Users can insert own saved listings" on public.saved_listings for
+insert with check (
+		(
+			select auth.jwt()->>'sub'
+		) = profile_id
+	);
+create policy "Users can delete own saved listings" on public.saved_listings for delete using (
+	(
+		select auth.jwt()->>'sub'
+	) = profile_id
+);
+create index idx_saved_listings_profile on public.saved_listings(profile_id);

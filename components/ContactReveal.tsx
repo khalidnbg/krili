@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MessageCircle, Phone } from "lucide-react"
-import { revealContact } from "@/lib/actions/ontact.action"
+import { revealContact } from "@/lib/actions/contact.action"
 import { Button } from "@/components/ui/button"
 
 interface ContactRevealProps {

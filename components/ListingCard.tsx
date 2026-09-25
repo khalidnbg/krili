@@ -3,27 +3,23 @@ import Image from "next/image"
 import { MapPin } from "lucide-react"
 import PropertyIcon from "@/components/PropertyIcon"
 import { getPropertyColor, getCoverPhotoUrl } from "@/lib/utils"
+import BookmarkButton from "./BookmarkButton"
 
 interface ListingCardProps {
 	listing: Listing
+	initialSaved?: boolean
 }
 
-const ListingCard = ({ listing }: ListingCardProps) => {
+const ListingCard = ({ listing, initialSaved }: ListingCardProps) => {
 	const { id, title, type, price, rooms, neighborhood, city, bookmarked } = listing
+
 	const cover = getCoverPhotoUrl(listing)
 
 	return (
 		<article className="listing-card" style={{ backgroundColor: getPropertyColor(type) }}>
 			<div className="flex justify-between items-center">
 				<div className="property-badge">{type}</div>
-				<button className="listing-bookmark" aria-label="Save listing">
-					<Image
-						src={bookmarked ? "/icons/bookmark-filled.svg" : "/icons/bookmark.svg"}
-						alt="bookmark"
-						width={12.5}
-						height={15}
-					/>
-				</button>
+				<BookmarkButton listingId={id} initialSaved={initialSaved ?? bookmarked} />
 			</div>
 
 			{cover && (
