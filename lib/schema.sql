@@ -114,6 +114,11 @@ update using (
 			select auth.jwt()->>'sub'
 		) = landlord_id
 	);
+create policy "Landlords can delete own listings" on public.listings for delete using (
+	(
+		select auth.jwt()->>'sub'
+	) = landlord_id
+);
 -- Listing photos: follow parent listing visibility
 create policy "Anyone can view photos of visible listings" on public.listing_photos for
 select using (

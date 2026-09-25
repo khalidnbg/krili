@@ -1,3 +1,4 @@
+import DeleteListingButton from "@/components/DeleteListingButton";
 import PropertyIcon from "@/components/PropertyIcon";
 import { Button } from "@/components/ui/button";
 import { createSupabaseClient } from "@/lib/supabase";
@@ -157,16 +158,15 @@ const page = async () => {
 
 										{/* UI-first: handlers are wired in the next step */}
 										<div className="flex flex-wrap gap-2">
-											<Button type="button" disabled title="Edit — coming soon">
-												Edit
-											</Button>
-											<Button type="button" variant="outline" disabled title="Replace photos — coming soon">
-												Photos
-											</Button>
-											<Button type="button" variant="ghost" disabled title="Delete — coming soon">
-												Delete
-											</Button>
+											<Link href={`/listings/${listing.id}/edit`}>
+												<Button type="button">Edit</Button>
+											</Link>
+											<Link href={`/listings/${listing.id}/edit`}>
+												<Button type="button" variant="outline">Photos</Button>
+											</Link>
+											<DeleteListingButton listingId={listing.id} />
 										</div>
+
 									</div>
 								</div>
 							</article>
