@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { ensureProfile } from "@/lib/actions/profile";
+import { isAdmin } from "@/lib/admin";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -26,11 +27,13 @@ export default async function RootLayout({
 
 	await ensureProfile()
 
+	const admin = await isAdmin()
+
 	return (
 		<html lang="en" className={cn("font-sans", geist.variable)}>
 			<body className={`${bricolage.variable} antialiased`}>
 				<ClerkProvider appearance={{ variables: { colorPrimary: '#fe5933' } }}>
-					<Navbar />
+					<Navbar isAdmin={admin} />
 					{children}
 				</ClerkProvider>
 			</body>
