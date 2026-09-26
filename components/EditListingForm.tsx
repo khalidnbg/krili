@@ -15,6 +15,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@/components/ui/field"
+import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import {
 	Select,
@@ -49,6 +50,12 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 				city: managed.city,
 				hasCaution: managed.hasCaution,
 				cautionAmount: managed.cautionAmount,
+				description: managed.description,
+				beds: managed.beds ?? managed.rooms,
+				bathrooms: managed.bathrooms ?? 1,
+				furnished: managed.furnished ?? false,
+				petFriendly: managed.petFriendly ?? false,
+				availableFrom: managed.availableFrom ?? "",
 			}
 			: undefined,
 	})
@@ -165,6 +172,60 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 						Security deposit (caution)
 					</FieldLabel>
 				</Field>
+
+				<Field data-invalid={!!form.formState.errors.description}>
+					<FieldLabel htmlFor="description">Description</FieldLabel>
+					<Textarea
+						id="description"
+						rows={4}
+						placeholder="Describe the property, features, and who it's ideal for…"
+						aria-invalid={!!form.formState.errors.description}
+						{...form.register("description")}
+					/>
+					{form.formState.errors.description && (
+						<FieldError>{form.formState.errors.description.message}</FieldError>
+					)}
+				</Field>
+
+				<div className="grid grid-cols-2 gap-4">
+					<Field data-invalid={!!form.formState.errors.beds}>
+						<FieldLabel htmlFor="beds">Beds</FieldLabel>
+						<Input
+							id="beds"
+							type="number"
+							min={1}
+							aria-invalid={!!form.formState.errors.beds}
+							{...form.register("beds")}
+						/>
+					</Field>
+					<Field data-invalid={!!form.formState.errors.bathrooms}>
+						<FieldLabel htmlFor="bathrooms">Bathrooms</FieldLabel>
+						<Input
+							id="bathrooms"
+							type="number"
+							min={1}
+							aria-invalid={!!form.formState.errors.bathrooms}
+							{...form.register("bathrooms")}
+						/>
+					</Field>
+				</div>
+
+				<Field>
+					<FieldLabel className="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" {...form.register("furnished")} className="size-4 accent-black" />
+						Furnished
+					</FieldLabel>
+					<FieldLabel className="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" {...form.register("petFriendly")} className="size-4 accent-black" />
+						Pet friendly
+					</FieldLabel>
+				</Field>
+
+				<Field>
+					<FieldLabel htmlFor="availableFrom">Available from</FieldLabel>
+					<Input id="availableFrom" type="date" {...form.register("availableFrom")} />
+				</Field>
+
 
 				<Field>
 					<FieldLabel>Photos</FieldLabel>

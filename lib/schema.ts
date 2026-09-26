@@ -10,6 +10,12 @@ export const listingSchema = z.object({
 	city: z.string().min(1, { message: "City is required." }),
 	hasCaution: z.boolean(),
 	cautionAmount: z.coerce.number().optional(),
+	description: z.string().optional(),
+	beds: z.coerce.number().min(1).optional(),
+	bathrooms: z.coerce.number().min(1).optional(),
+	furnished: z.boolean(),
+	petFriendly: z.boolean(),
+	availableFrom: z.string().optional(),
 })
 
 export type ListingFormValues = z.infer<typeof listingSchema>

@@ -217,3 +217,17 @@ create policy "Users can delete own saved listings" on public.saved_listings for
 	) = profile_id
 );
 create index idx_saved_listings_profile on public.saved_listings(profile_id);
+alter table public.listings
+add column description text,
+	add column beds integer not null default 1 check (beds > 0),
+	add column bathrooms integer not null default 1 check (bathrooms > 0),
+	add column furnished boolean not null default false,
+	add column pet_friendly boolean not null default false,
+	add column available_from date,
+	add column amenities text [] not null default '{}';
+-- profiles: landlord identity (populated from Clerk on sign-in)
+alter table public.profiles
+add column first_name text,
+	add column last_name text,
+	add column avatar_url text,
+	add column email text;

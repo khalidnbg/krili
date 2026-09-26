@@ -21,9 +21,16 @@ type Listing = {
 	city: string
 	description: string
 	landlordName: string
+	landlordAvatar?: string
 	hasCaution: boolean
 	cautionAmount?: number
 	bookmarked: boolean
+	beds?: number
+	bathrooms?: number
+	furnished?: boolean
+	petFriendly?: boolean
+	availableFrom?: string
+	amenities?: string[]
 	photos?: ListingPhoto[]
 }
 

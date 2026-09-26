@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "@/lib/supabase";
 
 /**
@@ -16,14 +16,25 @@ import { createSupabaseClient } from "@/lib/supabase";
 export async function ensureProfile() {
 	const { userId } = await auth();
 	if (!userId) return;
+	const user = await currentUser()
+	if (!user) return
 
 	const supabase = createSupabaseClient();
 
+	// Upsert only identity columns — other profile columns are untouched.
 	const { error } = await supabase
 		.from("profiles")
-		.upsert({ id: userId }, { onConflict: "id", ignoreDuplicates: true });
+		.upsert(
+			{
+				id: userId,
+				first_name: user.firstName,
+				last_name: user.lastName,
+				email: user.primaryEmailAddress?.emailAddress,
+				avatar_url: user.imageUrl,
+			},
+			{ onConflict: "id" }
+		)
 
-	if (error) {
-		console.error("ensureProfile failed:", error.message);
-	}
+	if (error) console.error("ensureProfile failed:", error.message)
+
 }

@@ -25,6 +25,7 @@ import { createListing } from "@/lib/actions/listing.action"
 import { listingSchema } from "@/lib/schema"
 import PhotoUploader, { PhotoUploaderState } from "./PhotoUploader"
 import { useState } from "react"
+import { Textarea } from "./ui/textarea"
 
 const ListingForm = () => {
 	const router = useRouter()
@@ -43,6 +44,12 @@ const ListingForm = () => {
 			city: "",
 			hasCaution: false,
 			cautionAmount: undefined,
+			description: "",
+			beds: 1,
+			bathrooms: 1,
+			furnished: false,
+			petFriendly: false,
+			availableFrom: ""
 		},
 	})
 
@@ -209,6 +216,49 @@ const ListingForm = () => {
 						)}
 					</Field>
 				)}
+
+				<Field data-invalid={!!form.formState.errors.description}>
+					<FieldLabel htmlFor="description">Description</FieldLabel>
+					<Textarea
+						id="description"
+						rows={4}
+						placeholder="Describe the property, features, and who it's ideal for…"
+						aria-invalid={!!form.formState.errors.description}
+						{...form.register("description")}
+					/>
+					{form.formState.errors.description && (
+						<FieldError>{form.formState.errors.description.message}</FieldError>
+					)}
+				</Field>
+
+				<div className="grid grid-cols-2 gap-4">
+					<Field data-invalid={!!form.formState.errors.beds}>
+						<FieldLabel htmlFor="beds">Beds</FieldLabel>
+						<Input id="beds" type="number" min={1} aria-invalid={!!form.formState.errors.beds}
+							{...form.register("beds")} />
+					</Field>
+					<Field data-invalid={!!form.formState.errors.bathrooms}>
+						<FieldLabel htmlFor="bathrooms">Bathrooms</FieldLabel>
+						<Input id="bathrooms" type="number" min={1} aria-invalid={!!form.formState.errors.bathrooms}
+							{...form.register("bathrooms")} />
+					</Field>
+				</div>
+
+				<Field>
+					<FieldLabel className="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" {...form.register("furnished")} className="size-4 accent-black" />
+						Furnished
+					</FieldLabel>
+					<FieldLabel className="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" {...form.register("petFriendly")} className="size-4 accent-black" />
+						Pet friendly
+					</FieldLabel>
+				</Field>
+
+				<Field>
+					<FieldLabel htmlFor="availableFrom">Available from</FieldLabel>
+					<Input id="availableFrom" type="date" {...form.register("availableFrom")} />
+				</Field>
 
 				<Field>
 					<FieldLabel>Photos</FieldLabel>

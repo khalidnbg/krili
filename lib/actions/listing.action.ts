@@ -5,6 +5,7 @@ import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { } from "@/components/ListingForm";
 import { ListingFormValues, listingSchema } from "../schema";
 import { createHash } from "node:crypto";
+import { getLandlordProfiles, mapListingRow } from "../listing-mapper";
 
 type EmbeddedNeighborhood = {
 	city?: string
@@ -118,10 +119,14 @@ export async function createListing(
 			property_type: parsed.data.type,
 			price_mad: parsed.data.price,
 			rooms: parsed.data.rooms,
+			beds: parsed.data.beds ?? parsed.data.rooms,
+			bathrooms: parsed.data.bathrooms ?? 1,
+			furnished: parsed.data.furnished,
+			pet_friendly: parsed.data.petFriendly,
+			available_from: parsed.data.availableFrom || null,
+			description: parsed.data.description ?? "",
 			has_caution: parsed.data.hasCaution,
-			caution_amount: parsed.data.cautionAmount
-				? parsed.data.cautionAmount
-				: null,
+			caution_amount: parsed.data.hasCaution ? parsed.data.cautionAmount : null,
 		})
 		.select()
 		.single();
@@ -191,62 +196,19 @@ export async function createListing(
 }
 
 export const fetchListings = async () => {
-	const supabase = createSupabaseClient()
-
-	const { data, error } = await supabase
+	const { data, error } = await createSupabaseClient()
 		.from("listings")
 		.select(
-			"id, title, price_mad, rooms, has_caution, caution_amount, property_type, neighborhoods(city, name), listing_photos(url, sort_order, is_cover)"
+			"id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, available_from, description, has_caution, caution_amount, property_type, neighborhoods(city, name), listing_photos(url, sort_order, is_cover)"
 		)
 		.eq("status", "published")
 		.order("created_at", { ascending: false })
 		.limit(12)
 
-	if (error) {
-		console.error("Failed to fetch listings:", error.message)
-		return null
-	}
+	if (error || !data?.length) return null
 
-	if (!data?.length) {
-		return null
-	}
-
-	return data.map((row) => {
-		const rawNeighborhood = row.neighborhoods as unknown as
-			| EmbeddedNeighborhood
-			| EmbeddedNeighborhood[]
-			| null
-
-		const neighborhood = Array.isArray(rawNeighborhood)
-			? rawNeighborhood[0]
-			: rawNeighborhood
-
-		return {
-			id: row.id,
-			title: row.title,
-			type: (row.property_type as PropertyType) || "house",
-			price: row.price_mad,
-			rooms: row.rooms,
-			neighborhood: neighborhood?.name ?? "",
-			city: neighborhood?.city ?? "",
-			description: "",
-			landlordName: "Landlord",
-			hasCaution: row.has_caution,
-			cautionAmount: row.caution_amount,
-			bookmarked: false,
-
-			photos: (row.listing_photos ?? [])
-				.sort(
-					(a, b) =>
-						(a.sort_order ?? 0) - (b.sort_order ?? 0)
-				)
-				.map((photo) => ({
-					url: photo.url,
-					sort_order: photo.sort_order ?? 0,
-					is_cover: photo.is_cover ?? false,
-				})),
-		} satisfies Listing
-	})
+	const landlords = await getLandlordProfiles(data.map((row) => row.landlord_id))
+	return data.map((row) => mapListingRow(row, landlords[row.landlord_id]))
 }
 
 export const isAdmin = async () => {
@@ -420,9 +382,9 @@ export async function getManagedListing(id: string) {
 	const { data } = await supabase
 		.from("listings")
 		.select(`
-			id, landlord_id, title, price_mad, rooms, has_caution, caution_amount, property_type,
-			neighborhoods(city, name),
-			listing_photos(url, sort_order, is_cover)
+			id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly,
+			available_from, description, has_caution, caution_amount, property_type,
+			neighborhoods(city, name), listing_photos(url, sort_order, is_cover)
 		`)
 		.eq("id", id)
 		.maybeSingle();
@@ -435,29 +397,9 @@ export async function getManagedListing(id: string) {
 		| { city?: string; name?: string }
 		| { city?: string; name?: string }[]
 		| null;
-	const neighborhood = Array.isArray(rawNeighborhood) ? rawNeighborhood[0] : rawNeighborhood;
 
-	return {
-		id: data.id,
-		title: data.title,
-		type: (data.property_type as PropertyType) || "house",
-		price: data.price_mad,
-		rooms: data.rooms,
-		neighborhood: neighborhood?.name ?? "",
-		city: neighborhood?.city ?? "",
-		description: "",
-		landlordName: "Landlord",
-		hasCaution: data.has_caution,
-		cautionAmount: data.caution_amount,
-		bookmarked: false,
-		photos: (data.listing_photos ?? [])
-			.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-			.map((photo) => ({
-				url: photo.url,
-				sort_order: photo.sort_order ?? 0,
-				is_cover: photo.is_cover ?? false,
-			})),
-	} satisfies Listing;
+	const profile = (await getLandlordProfiles([data.landlord_id]))[data.landlord_id]
+	return mapListingRow(data, profile)
 
 }
 
@@ -486,6 +428,12 @@ export async function updateManagedListing(id: string, input: ListingFormValues)
 			property_type: parsed.data.type,
 			price_mad: parsed.data.price,
 			rooms: parsed.data.rooms,
+			beds: parsed.data.beds ?? parsed.data.rooms,
+			bathrooms: parsed.data.bathrooms ?? 1,
+			furnished: parsed.data.furnished,
+			pet_friendly: parsed.data.petFriendly,
+			available_from: parsed.data.availableFrom || null,
+			description: parsed.data.description ?? "",
 			has_caution: parsed.data.hasCaution,
 			caution_amount: parsed.data.hasCaution ? parsed.data.cautionAmount : null,
 			status: "pending",
