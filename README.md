@@ -80,3 +80,9 @@ flowchart TD
   B -->|Looks real| C[Approve - Listing goes live]
   B -->|Suspicious| D[Reject - Notify landlord with reason]
 ```
+
+---
+
+## Documentation
+
+Full project documentation — architecture, data model, auth, all implemented features, setup SQL, and known gaps — lives in **[`docs/PROJECT.md`](docs/PROJECT.md)**.
