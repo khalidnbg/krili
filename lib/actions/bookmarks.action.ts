@@ -5,7 +5,13 @@ import { createSupabaseClient } from "../supabase"
 
 /** Server helper for pages: all listing ids the signed-in user saved. */
 export async function getSavedListingIds(): Promise<string[]> {
-	const { userId } = await auth()
+	let userId: string | null = null
+	try {
+		userId = (await auth()).userId
+	} catch {
+		// Next is collecting page data during build (no request scope) — no user.
+		return []
+	}
 	if (!userId) return []
 
 	const { data } = await createSupabaseClient()

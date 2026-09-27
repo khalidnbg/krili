@@ -1,7 +1,12 @@
 import { currentUser } from "@clerk/nextjs/server"
 
 export const isAdmin = async () => {
-	const user = await currentUser()
+	let user: Awaited<ReturnType<typeof currentUser>> = null
+	try {
+		user = await currentUser()
+	} catch {
+		return false
+	}
 	if (!user) return false
 
 	// Clerk dashboard → public metadata {"role": "admin"}

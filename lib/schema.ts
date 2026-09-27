@@ -19,3 +19,11 @@ export const listingSchema = z.object({
 })
 
 export type ListingFormValues = z.infer<typeof listingSchema>
+
+export const reportSchema = z.object({
+	listingId: z.string().uuid(),
+	reason: z.enum(["scam", "fake_photos", "already_rented", "offensive", "other"]),
+	details: z.string().max(500).optional(),
+})
+
+export type ReportFormValues = z.infer<typeof reportSchema>

@@ -231,3 +231,20 @@ add column first_name text,
 	add column last_name text,
 	add column avatar_url text,
 	add column email text;
+-- REPORTS: enrichment + dedupe + admin queue index
+alter table public.reports
+add column details text;
+alter table public.reports
+add constraint reports_reporter_listing_unique unique (reporter_id, listing_id);
+create index if not exists reports_status_created_at_idx on public.reports (status, created_at desc);
+-- optional hardening: keep reason values aligned with the app enum
+alter table public.reports
+add constraint reports_reason_check check (
+		reason in (
+			'scam',
+			'fake_photos',
+			'already_rented',
+			'offensive',
+			'other'
+		)
+	);

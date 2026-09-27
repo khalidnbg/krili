@@ -4,6 +4,8 @@
 type PropertyType = "house" | "studio" | "room" | "apartment"
 type ListingStatus = "pending" | "published" | "rejected" | "rented"
 type UserRole = "landlord" | "tenant" | "both"
+type ReportReason = "scam" | "fake_photos" | "already_rented" | "offensive" | "other"
+type ReportStatus = "open" | "reviewed" | "dismissed"
 
 type ListingPhoto = {
 	url: string
@@ -48,7 +50,6 @@ type ModerationListing = {
 	createdAt: string
 	photos: ListingPhoto[]
 }
-
 interface CreateListing {
 	title: string
 	type: PropertyType
@@ -59,7 +60,6 @@ interface CreateListing {
 	hasCaution: boolean
 	cautionAmount?: number
 }
-
 interface GetAllListings {
 	limit?: number
 	page?: number
@@ -79,4 +79,19 @@ interface Avatar {
 	width: number
 	height: number
 	className?: string
+}
+
+type ListingReport = {
+	id: string
+	listingId: string
+	reporterId: string
+	reason: ReportReason
+	details?: string | null
+	status: ReportStatus
+	createdAt: string
+}
+
+type ModerationReport = ListingReport & {
+	listingTitle: string
+	listingStatus: ListingStatus
 }

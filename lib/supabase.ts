@@ -4,13 +4,20 @@ import { createClient } from "@supabase/supabase-js"
 export const createSupabaseClient = () => {
 	return createClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
-		async accessToken() {
-			return ((await auth()).getToken());
+		process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+		{
+			async accessToken() {
+				try {
+					return (await auth()).getToken()
+				} catch {
+					// No request scope (e.g., Next collecting page data at build time).
+					return null
+				}
+			},
 		}
-	}
 	)
 }
+
 
 export const createServiceRoleClient = () => {
 	// Bypasses RLS — never expose this key publicly.

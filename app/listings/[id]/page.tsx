@@ -1,13 +1,14 @@
 import Link from "next/link"
 import NotFound from "@/components/NotFound"
 import PropertyIcon from "@/components/PropertyIcon"
-import { allListings } from "@/constants"
+// import { allListings } from "@/constants"
 import { getPropertyColor } from "@/lib/utils"
 import { createSupabaseClient } from "@/lib/supabase"
 import ListingPhotoGallery from "@/components/ListingPhotoGallery"
 import ContactReveal from "@/components/ContactReveal"
 import { auth } from "@clerk/nextjs/server"
 import { getLandlordProfiles, mapListingRow } from "@/lib/listing-mapper"
+import ReportListingButton from "@/components/ReportListingButton"
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
@@ -31,7 +32,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 		const profile = (await getLandlordProfiles([row.landlord_id]))[row.landlord_id]
 		listing = mapListingRow(row, profile)
 	} else {
-		listing = allListings.find((l) => l.id === id)
+		// listing = allListings.find((l) => l.id === id)
+		listing = undefined
 	}
 
 	if (!listing) {
@@ -51,6 +53,17 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			.eq("tenant_id", userId)
 			.maybeSingle()
 		initialRevealed = !!reveal
+	}
+
+	let initialReported = false
+	if (userId && listing) {
+		const { data: report } = await supabase
+			.from("reports")
+			.select("id")
+			.eq("listing_id", listing.id)
+			.eq("reporter_id", userId)
+			.maybeSingle()
+		initialReported = !!report
 	}
 
 	return (
@@ -145,6 +158,12 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
 							<ContactReveal listingId={listing.id} initialRevealed={initialRevealed} />
 						</div>
+
+						{userId && (
+							<div className="flex justify-end pt-2">
+								<ReportListingButton listingId={listing.id} initialReported={initialReported} />
+							</div>
+						)}
 					</div>
 				</article>
 			</section>
