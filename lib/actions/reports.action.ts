@@ -41,6 +41,7 @@ export async function createReport(input: ReportFormValues): Promise<ReportActio
 		.select("id")
 		.eq("listing_id", parsed.data.listingId)
 		.eq("reporter_id", userId)
+		.eq("status", "open")
 		.maybeSingle()
 
 	if (existing) return { ok: true, alreadyReported: true }
@@ -120,25 +121,66 @@ export async function getOpenReports(): Promise<ModerationReport[] | null> {
 
 export async function resolveReport(
 	reportId: string,
-	resolution: "reviewed" | "dismissed"
+	resolution: "reviewed" | "dismissed",
+	listingAction?: { newStatus: "rejected" | "rented"; reason?: string }
 ): Promise<AdminReportActionResult> {
 	if (!(await isAdmin())) return { ok: false, error: "Forbidden" }
 	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 		return { ok: false, error: "Service role key not configured" }
 	}
 
-	const { data: updated, error } = await createServiceRoleClient()
+	const service = createServiceRoleClient()
+
+	// Resolve the report first (single source of truth for the queue).
+	const { data: updatedReport, error: reportError } = await service
 		.from("reports")
 		.update({ status: resolution })
 		.eq("id", reportId)
 		.select("id")
 		.single()
 
-	// No-match failures surface as an empty result — don't report success.
-	if (error || !updated) {
-		console.error("resolveReport failed:", error?.message ?? "report not found")
-		return { ok: false, error: error?.message ?? "Report could not be updated." }
+	// No-match/RLS-style failures surface as empty here — don't report success.
+	if (reportError || !updatedReport) {
+		console.error("resolveReport failed:", reportError?.message ?? "report not found")
+		return { ok: false, error: reportError?.message ?? "Report could not be updated." }
 	}
 
+	// Listing action only applies when the report is being reviewed.
+	if (listingAction && resolution === "reviewed") {
+		const { data: report } = await service
+			.from("reports")
+			.select("listing_id")
+			.eq("id", reportId)
+			.maybeSingle()
+
+		if (!report?.listing_id) {
+			// Report already updated — say so explicitly.
+			return { ok: false, error: "Report resolved, but its listing could not be found to update." }
+		}
+
+		// Same update pattern as the moderation reject action.
+		const listingUpdate =
+			listingAction.newStatus === "rejected"
+				? {
+					status: "rejected",
+					rejection_reason: listingAction.reason?.trim() || "Unpublished after a report",
+				}
+				: { status: "rented", rejection_reason: null }
+
+		const { data: updatedListing, error: listingError } = await service
+			.from("listings")
+			.update(listingUpdate)
+			.eq("id", report.listing_id)
+			.select("id")
+			.single()
+
+		if (listingError || !updatedListing) {
+			console.error("resolveReport listing update failed:", listingError?.message ?? "listing not found")
+			return {
+				ok: false,
+				error: `Report resolved, but the listing could not be updated: ${listingError?.message ?? "listing not found"}`,
+			}
+		}
+	}
 	return { ok: true }
 }

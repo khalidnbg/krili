@@ -248,3 +248,5 @@ add constraint reports_reason_check check (
 			'other'
 		)
 	);
+create unique index if not exists reports_one_open_per_reporter_listing on public.reports (reporter_id, listing_id)
+where status = 'open';

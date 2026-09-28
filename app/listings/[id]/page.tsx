@@ -19,10 +19,10 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { data: row } = await supabase
 		.from("listings")
 		.select(`
-			id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly,
-			available_from, description, has_caution, caution_amount, property_type,
-			neighborhoods(city, name), listing_photos(url, sort_order, is_cover)
-		`)
+		id, landlord_id, status, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly,
+		available_from, description, has_caution, caution_amount, property_type,
+		neighborhoods(city, name), listing_photos(url, sort_order, is_cover)
+	`)
 		.eq("id", id)
 		.maybeSingle()
 
@@ -44,6 +44,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 		)
 	}
 
+	const isPublished = row?.status === "published"
+
 	let initialRevealed = false
 	if (userId && listing) {
 		const { data: reveal } = await supabase
@@ -62,6 +64,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			.select("id")
 			.eq("listing_id", listing.id)
 			.eq("reporter_id", userId)
+			.eq("status", "open")
 			.maybeSingle()
 		initialReported = !!report
 	}
@@ -159,8 +162,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 							<ContactReveal listingId={listing.id} initialRevealed={initialRevealed} />
 						</div>
 
-						{userId && (
-							<div className="flex justify-end pt-2">
+						{userId && isPublished && (
+							<div className="flex justify-end">
 								<ReportListingButton listingId={listing.id} initialReported={initialReported} />
 							</div>
 						)}

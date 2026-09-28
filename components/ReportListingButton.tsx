@@ -49,23 +49,29 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 
 	if (reported) {
 		return (
-			<button type="button" disabled className="btn-signin">
+			<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
 				<Flag className="size-3.5" /> Reported
-			</button>
+			</span>
 		)
 	}
 
 	return (
 		<div className="flex flex-col gap-2">
 			{!open ? (
-				<Button type="button" variant="ghost" onClick={() => setOpen(true)}>
+				<button
+					type="button"
+					onClick={() => setOpen(true)}
+					className="inline-flex items-center gap-1.5 self-end rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				>
 					<Flag className="size-3.5" /> Report listing
-				</Button>
+				</button>
 			) : (
-				<div className="flex flex-col gap-2 rounded-xl border border-border bg-muted/40 p-3">
-					<p className="text-xs font-semibold text-muted-foreground">Report this listing</p>
+				<div className="flex w-72 flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-lg">
+					<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+						Report this listing
+					</p>
 					<Select value={reason} onValueChange={(value) => setReason(value ?? "")}>
-						<SelectTrigger className="w-full">
+						<SelectTrigger className="w-full rounded-full">
 							<SelectValue placeholder="Reason" />
 						</SelectTrigger>
 						<SelectContent>
@@ -81,27 +87,37 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 						placeholder="Details (optional)"
 						value={details}
 						onChange={(e) => setDetails(e.target.value)}
+						className="rounded-xl"
 					/>
 					<div className="flex gap-2">
-						<Button type="button" disabled={busy || !reason} onClick={handleSubmit} className="flex-1">
-							{busy ? "Submitting…" : "Submit report"}
-						</Button>
 						<Button
 							type="button"
-							variant="ghost"
+							disabled={busy || !reason}
+							onClick={handleSubmit}
+							className="flex-1 rounded-full shadow-sm transition-transform active:scale-[0.98]"
+						>
+							{busy ? "Submitting…" : "Submit report"}
+						</Button>
+						<button
+							type="button"
 							disabled={busy}
 							onClick={() => {
 								setOpen(false)
 								setReason("")
 								setDetails("")
 							}}
+							className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
 						>
 							Cancel
-						</Button>
+						</button>
 					</div>
 				</div>
 			)}
-			{error && <p className="text-xs text-destructive">{error}</p>}
+			{error && (
+				<p className="self-end rounded-md bg-destructive/10 px-3 py-1 text-xs text-destructive">
+					{error}
+				</p>
+			)}
 		</div>
 	)
 }
