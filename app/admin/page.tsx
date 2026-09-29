@@ -7,17 +7,36 @@ import { getModerationQueue, isAdmin } from "@/lib/actions/listing.action"
 import { getOpenReports } from "@/lib/actions/reports.action"
 import { reportReasons } from "@/constants"
 import ReportReviewActions from "@/components/admin/ReportReviewActions"
+import Pagination from "@/components/Pagination"
 
-const Page = async () => {
-	if (!(await isAdmin())) {
-		redirect("/")
+const Page = async ({ searchParams }: SearchParams) => {
+	const params = await searchParams
+	const num = (key: string) => {
+		const value = params[key]
+		return typeof value === "string" ? Number(value) : undefined
 	}
+	const listingsPage = Math.max(1, num("listingsPage") ?? 1)
+	const reportsPage = Math.max(1, num("reportsPage") ?? 1)
+	const pageSize = 10
 
-	const queue = (await getModerationQueue()) ?? []
-	const reports = (await getOpenReports()) ?? []
+	const queueResult = await getModerationQueue(listingsPage, pageSize)
+	const reportsResult = await getOpenReports(reportsPage, pageSize)
+
+	const queue = queueResult?.items ?? []
+	const reports = reportsResult?.items ?? []
+	const queueTotalPages = Math.max(1, Math.ceil((queueResult?.total ?? 0) / pageSize))
+	const reportsTotalPages = Math.max(1, Math.ceil((reportsResult?.total ?? 0) / pageSize))
 
 	const reasonLabel = (reason: ReportReason) =>
 		reportReasons.find((item) => item.value === reason)?.label ?? reason
+
+	// Params shared by both paginators, minus the two page keys:
+	const relistParams: Record<string, string> = {}
+	for (const [key, value] of Object.entries(params)) {
+		if (key === "listingsPage" || key === "reportsPage") continue
+		if (typeof value === "string") relistParams[key] = value
+	}
+
 
 	return (
 		<main>
@@ -89,6 +108,14 @@ const Page = async () => {
 				</section>
 			)}
 
+			<Pagination
+				currentPage={listingsPage}
+				totalPages={queueTotalPages}
+				basePath="/admin"
+				pageParam="listingsPage"
+				searchParams={relistParams}
+			/>
+
 			<section className="flex flex-col gap-2">
 				<h2 className="text-2xl font-bold">
 					Reports
@@ -132,6 +159,14 @@ const Page = async () => {
 					))}
 				</section>
 			)}
+
+			<Pagination
+				currentPage={reportsPage}
+				totalPages={reportsTotalPages}
+				basePath="/admin"
+				pageParam="reportsPage"
+				searchParams={relistParams}
+			/>
 		</main>
 	)
 }

@@ -98,25 +98,34 @@ const mapReportRow = (row: ReportRow): ModerationReport => {
 	}
 }
 
-export async function getOpenReports(): Promise<ModerationReport[] | null> {
+export async function getOpenReports(
+	page = 1,
+	pageSize = 10
+): Promise<{ items: ModerationReport[]; total: number } | null> {
 	if (!(await isAdmin())) return null
 	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 		console.error("getOpenReports: SUPABASE_SERVICE_ROLE_KEY is not set")
 		return null
 	}
 
-	const { data, error } = await createServiceRoleClient()
+	const { data, error, count } = await createServiceRoleClient()
 		.from("reports")
-		.select("id, listing_id, reporter_id, reason, details, status, created_at, listings(title, status)")
+		.select("id, listing_id, reporter_id, reason, details, status, created_at, listings(title, status)", {
+			count: "exact",
+		})
 		.eq("status", "open")
 		.order("created_at", { ascending: false })
+		.range((page - 1) * pageSize, page * pageSize - 1)
 
 	if (error) {
 		console.error("getOpenReports failed:", error.message)
 		return null
 	}
 
-	return (data ?? []).map((row) => mapReportRow(row))
+	return {
+		items: (data ?? []).map((row) => mapReportRow(row)),
+		total: count ?? 0,
+	}
 }
 
 export async function resolveReport(

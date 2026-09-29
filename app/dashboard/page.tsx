@@ -1,4 +1,5 @@
 import DeleteListingButton from "@/components/DeleteListingButton";
+import Pagination from "@/components/Pagination";
 import PropertyIcon from "@/components/PropertyIcon";
 import { Button } from "@/components/ui/button";
 import { createSupabaseClient } from "@/lib/supabase";
@@ -16,26 +17,31 @@ const statusStyles: Record<ListingStatus, string> = {
 	rented: "bg-muted text-muted-foreground",
 }
 
-const fetchMyListings = async (landlordId: string): Promise<ModerationListing[]> => {
+const fetchMyListings = async (
+	landlordId: string,
+	from: number,
+	to: number
+): Promise<{ listings: ModerationListing[]; total: number }> => {
 	const supabase = createSupabaseClient()
 
-	const { data, error } = await supabase
+	const { data, error, count } = await supabase
 		.from("listings")
 		.select(`
 			id, title, price_mad, rooms, has_caution, caution_amount, property_type,
 			status, rejection_reason, created_at,
 			neighborhoods(city, name),
 			listing_photos(url, sort_order, is_cover)
-		`)
+		`, { count: "exact" })
 		.eq("landlord_id", landlordId)
 		.order("created_at", { ascending: false })
+		.range(from, to)
 
 	if (error) {
 		console.error("fetchMyListings failed:", error.message)
-		return []
+		return { listings: [], total: 0 }
 	}
 
-	return (data ?? []).map((row) => {
+	const listings = (data ?? []).map((row) => {
 		// supabase-js types embeds as arrays; PostgREST returns objects here.
 		const rawNeighborhood = row.neighborhoods as unknown as
 			| EmbeddedNeighborhood
@@ -64,14 +70,23 @@ const fetchMyListings = async (landlordId: string): Promise<ModerationListing[]>
 				})),
 		} satisfies ModerationListing
 	})
+
+	return { listings, total: count ?? data?.length ?? 0 }
 }
 
-const page = async () => {
-	const { userId } = await auth()
+const Page = async ({ searchParams }: SearchParams) => {
+	const params = await searchParams
+	const page = Math.max(1, Number(typeof params.page === "string" ? params.page : "1") || 1)
+	const pageSize = 10
+	const from = (page - 1) * pageSize
+	const to = page * pageSize - 1
 
+	const { userId } = await auth()
 	if (!userId) redirect("/sign-in")
 
-	const listings = await fetchMyListings(userId)
+	const result = await fetchMyListings(userId, from, to)
+	const listings = result.listings
+	const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
 
 	return (
 		<main>
@@ -174,8 +189,10 @@ const page = async () => {
 					})}
 				</section>
 			)}
+
+			<Pagination currentPage={page} totalPages={totalPages} basePath="/dashboard" searchParams={params} />
 		</main>
 	)
 }
 
-export default page
+export default Page

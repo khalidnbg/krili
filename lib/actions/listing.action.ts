@@ -12,6 +12,16 @@ type EmbeddedNeighborhood = {
 	name?: string
 }
 
+export interface FetchListingsParams {
+	page?: number
+	pageSize?: number
+	city?: string
+	type?: string
+	minPrice?: number
+	maxPrice?: number
+	rooms?: number
+}
+
 export type AdminActionResult = { ok: boolean; error?: string }
 
 const adminSupabase = () => {
@@ -195,20 +205,49 @@ export async function createListing(
 	} satisfies Listing;
 }
 
-export const fetchListings = async () => {
-	const { data, error } = await createSupabaseClient()
+export const fetchListings = async ({
+	page = 1,
+	pageSize = 12,
+	city,
+	type,
+	minPrice,
+	maxPrice,
+	rooms,
+}: FetchListingsParams = {}) => {
+	const from = (page - 1) * pageSize
+	const to = page * pageSize - 1
+
+	let query = createSupabaseClient()
 		.from("listings")
 		.select(
-			"id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, available_from, description, has_caution, caution_amount, property_type, neighborhoods(city, name), listing_photos(url, sort_order, is_cover)"
+			"id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, available_from, description, has_caution, caution_amount, property_type, neighborhoods!inner(city, name), listing_photos(url, sort_order, is_cover)",
+			{ count: "exact" }
 		)
 		.eq("status", "published")
 		.order("created_at", { ascending: false })
-		.limit(12)
+		.range(from, to)
 
-	if (error || !data?.length) return null
+	if (type) query = query.eq("property_type", type)
+	if (minPrice !== undefined && !Number.isNaN(minPrice)) query = query.gte("price_mad", minPrice)
+	if (maxPrice !== undefined && !Number.isNaN(maxPrice)) query = query.lte("price_mad", maxPrice)
+	if (rooms !== undefined && !Number.isNaN(rooms)) query = query.gte("rooms", rooms)
+	// City now filters in SQL — pagination math is correct again.
+	if (city) query = query.eq("neighborhoods.city", city)
+
+
+	const { data, error, count } = await query
+
+	if (error || !data?.length) {
+		console.error("fetchListings failed:", error?.message)
+		return null
+	}
 
 	const landlords = await getLandlordProfiles(data.map((row) => row.landlord_id))
-	return data.map((row) => mapListingRow(row, landlords[row.landlord_id]))
+
+	return {
+		listings: data.map((row) => mapListingRow(row, landlords[row.landlord_id])),
+		total: count ?? data.length,
+	}
 }
 
 export const isAdmin = async () => {
@@ -226,60 +265,64 @@ export const isAdmin = async () => {
 	return admins.includes(user.id)
 }
 
-export async function getModerationQueue(): Promise<ModerationListing[] | null> {
+export async function getModerationQueue(
+	page = 1,
+	pageSize = 10
+): Promise<{ items: ModerationListing[]; total: number } | null> {
 	if (!(await isAdmin())) return null
 	const supabase = adminSupabase()
-	if (!supabase) {
-		console.error("getModerationQueue: SUPABASE_SERVICE_ROLE_KEY is not set")
-		return null
-	}
+	if (!supabase) return null
 
-	const { data, error } = await supabase
+	const { data, error, count } = await supabase   // ← count added
 		.from("listings")
 		.select(`
 			id, title, price_mad, rooms, has_caution, caution_amount, property_type,
 			status, rejection_reason, landlord_id, created_at,
 			neighborhoods(city, name),
 			listing_photos(url, sort_order, is_cover)
-		`)
+		`, { count: "exact" })
 		.in("status", ["pending", "rejected"])
 		.order("created_at", { ascending: false })
+		.range((page - 1) * pageSize, page * pageSize - 1)
 
 	if (error) {
 		console.error("getModerationQueue failed:", error.message)
 		return null
 	}
 
-	return (data ?? []).map((row: any) => {
-		// supabase-js types embeds as arrays; PostgREST returns objects here.
-		const rawNeighborhood = row.neighborhoods as unknown as
-			| EmbeddedNeighborhood
-			| EmbeddedNeighborhood[]
-			| null
-		const neighborhood = Array.isArray(rawNeighborhood) ? rawNeighborhood[0] : rawNeighborhood
+	return {
+		items: (data ?? []).map((row: any) => {
+			const rawNeighborhood = row.neighborhoods as unknown as
+				| EmbeddedNeighborhood
+				| EmbeddedNeighborhood[]
+				| null
+			const neighborhood = Array.isArray(rawNeighborhood) ? rawNeighborhood[0] : rawNeighborhood
 
-		return {
-			id: row.id,
-			title: row.title,
-			type: (row.property_type as PropertyType) || "house",
-			price: row.price_mad,
-			rooms: row.rooms,
-			neighborhood: neighborhood?.name ?? "",
-			city: neighborhood?.city ?? "",
-			status: row.status as ListingStatus,
-			rejectionReason: row.rejection_reason as string | null,
-			landlordId: row.landlord_id,
-			createdAt: row.created_at,
-			photos: (row.listing_photos ?? [])
-				.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-				.map((photo: any) => ({
-					url: photo.url,
-					sort_order: photo.sort_order ?? 0,
-					is_cover: photo.is_cover ?? false,
-				})),
-		} satisfies ModerationListing
-	})
+			return {
+				id: row.id,
+				title: row.title,
+				type: (row.property_type as PropertyType) || "house",
+				price: row.price_mad,
+				rooms: row.rooms,
+				neighborhood: neighborhood?.name ?? "",
+				city: neighborhood?.city ?? "",
+				status: row.status as ListingStatus,
+				rejectionReason: row.rejection_reason as string | null,
+				landlordId: row.landlord_id,
+				createdAt: row.created_at,
+				photos: (row.listing_photos ?? [])
+					.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+					.map((photo: any) => ({
+						url: photo.url,
+						sort_order: photo.sort_order ?? 0,
+						is_cover: photo.is_cover ?? false,
+					})),
+			} satisfies ModerationListing
+		}),
+		total: count ?? 0,
+	}
 }
+
 
 export async function approveListing(id: string): Promise<AdminActionResult> {
 	if (!(await isAdmin())) return { ok: false, error: "Forbidden" }
@@ -308,7 +351,6 @@ export async function rejectListing(id: string, reason: string): Promise<AdminAc
 
 	return error ? { ok: false, error: error.message } : { ok: true }
 }
-
 
 /* ---------- helpers ---------- */
 
@@ -483,7 +525,6 @@ export async function deleteManagedListing(id: string) {
 
 	return { ok: true };
 }
-
 
 export async function replaceManagedPhotos(
 	id: string,
