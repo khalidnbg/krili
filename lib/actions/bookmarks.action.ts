@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { createSupabaseClient } from "../supabase"
+import { assertNotSuspended } from "../auth-guards"
 
 /** Server helper for pages: all listing ids the signed-in user saved. */
 export async function getSavedListingIds(): Promise<string[]> {
@@ -27,6 +28,9 @@ export type BookmarkResult = { ok: boolean; saved: boolean; error?: string }
 export async function toggleBookmark(listingId: string): Promise<BookmarkResult> {
 	const { userId } = await auth()
 	if (!userId) return { ok: false, saved: false, error: "auth" }
+
+	const suspendedError = await assertNotSuspended(userId)
+	if (suspendedError) return { ok: false, saved: false, error: suspendedError }
 
 	const supabase = createSupabaseClient()
 

@@ -95,3 +95,17 @@ type ModerationReport = ListingReport & {
 	listingTitle: string
 	listingStatus: ListingStatus
 }
+
+type AdminUserRow = {
+	id: string
+	firstName?: string | null
+	lastName?: string | null
+	email?: string | null
+	phone?: string | null
+	role: UserRole
+	phoneVerified: boolean
+	idVerified: boolean
+	suspended: boolean
+	listingCount: number
+	createdAt: string
+}

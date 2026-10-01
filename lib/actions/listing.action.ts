@@ -6,6 +6,7 @@ import { } from "@/components/ListingForm";
 import { ListingFormValues, listingSchema } from "../schema";
 import { createHash } from "node:crypto";
 import { getLandlordProfiles, mapListingRow } from "../listing-mapper";
+import { assertNotSuspended } from "../auth-guards";
 
 type EmbeddedNeighborhood = {
 	city?: string
@@ -82,6 +83,11 @@ export async function createListing(
 
 	const { userId } = await auth();
 	if (!userId) return null;
+
+	const suspendedError = await assertNotSuspended(userId)
+	if (suspendedError) {
+		return { ok: false, reason: "error", message: suspendedError }
+	}
 
 	const supabase = createSupabaseClient();
 

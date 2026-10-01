@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { ReportFormValues, reportSchema } from "../schema";
 import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { isAdmin } from "../admin";
+import { assertNotSuspended } from "../auth-guards";
 
 /* ---------------- tenant: create report ---------------- */
 export type ReportActionResult =
@@ -20,6 +21,10 @@ export async function createReport(input: ReportFormValues): Promise<ReportActio
 	if (!userId) {
 		return { ok: false, reason: "auth", message: "Sign in to report a listing." }
 	}
+
+	const suspendedError = await assertNotSuspended(userId)
+	if (suspendedError) return { ok: false, reason: "error", message: suspendedError }
+
 
 	const supabase = createSupabaseClient()
 

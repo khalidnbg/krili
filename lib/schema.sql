@@ -250,3 +250,6 @@ add constraint reports_reason_check check (
 	);
 create unique index if not exists reports_one_open_per_reporter_listing on public.reports (reporter_id, listing_id)
 where status = 'open';
+alter table public.profiles
+add column suspended boolean not null default false;
+create index if not exists profiles_role_idx on public.profiles(role);

@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { normalizeWhatsAppPhone } from "../utils";
+import { assertNotSuspended } from "../auth-guards";
 
 export type RevealContactResult =
 	| { ok: true; phone: string | null }
@@ -14,6 +15,9 @@ export async function revealContact(listingId: string): Promise<RevealContactRes
 	if (!userId) {
 		return { ok: false, reason: "auth", message: "Sign in to reveal the landlord's contact." }
 	}
+
+	const suspendedError = await assertNotSuspended(userId)
+	if (suspendedError) return { ok: false, reason: "error", message: suspendedError }
 
 	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 		console.error("revealContact: SUPABASE_SERVICE_ROLE_KEY is not set")

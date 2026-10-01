@@ -8,6 +8,9 @@ import { getOpenReports } from "@/lib/actions/reports.action"
 import { reportReasons } from "@/constants"
 import ReportReviewActions from "@/components/admin/ReportReviewActions"
 import Pagination from "@/components/Pagination"
+import { getUsers } from "@/lib/actions/admin-users.action"
+import UsersFilter from "@/components/admin/UsersFilter"
+import SuspendUserButton from "@/components/admin/SuspendUserButton"
 
 const Page = async ({ searchParams }: SearchParams) => {
 	const params = await searchParams
@@ -15,21 +18,34 @@ const Page = async ({ searchParams }: SearchParams) => {
 		const value = params[key]
 		return typeof value === "string" ? Number(value) : undefined
 	}
+
+	const pageSize = 10
+
+	const usersPage = Math.max(1, num("usersPage") ?? 1)
 	const listingsPage = Math.max(1, num("listingsPage") ?? 1)
 	const reportsPage = Math.max(1, num("reportsPage") ?? 1)
-	const pageSize = 10
+
+	const usersSearch = typeof params.usersSearch === "string" ? params.usersSearch : ""
+	const usersRole = typeof params.usersRole === "string" ? params.usersRole : ""
 
 	const queueResult = await getModerationQueue(listingsPage, pageSize)
 	const reportsResult = await getOpenReports(reportsPage, pageSize)
+	const usersResult = await getUsers({ page: usersPage, pageSize: 10, search: usersSearch, role: usersRole })
 
+	const users = usersResult?.rows ?? []
 	const queue = queueResult?.items ?? []
 	const reports = reportsResult?.items ?? []
+
+	const usersTotalPages = Math.max(1, Math.ceil((usersResult?.total ?? 0) / 10))
 	const queueTotalPages = Math.max(1, Math.ceil((queueResult?.total ?? 0) / pageSize))
 	const reportsTotalPages = Math.max(1, Math.ceil((reportsResult?.total ?? 0) / pageSize))
 
-	const reasonLabel = (reason: ReportReason) =>
-		reportReasons.find((item) => item.value === reason)?.label ?? reason
-
+	// Params preserved for the Users paginator (filters included, page keys excluded):
+	const usersParams: Record<string, string> = {}
+	for (const [key, value] of Object.entries(params)) {
+		if (key === "usersPage" || key === "listingsPage" || key === "reportsPage") continue
+		if (typeof value === "string") usersParams[key] = value
+	}
 	// Params shared by both paginators, minus the two page keys:
 	const relistParams: Record<string, string> = {}
 	for (const [key, value] of Object.entries(params)) {
@@ -37,6 +53,8 @@ const Page = async ({ searchParams }: SearchParams) => {
 		if (typeof value === "string") relistParams[key] = value
 	}
 
+	const reasonLabel = (reason: ReportReason) =>
+		reportReasons.find((item) => item.value === reason)?.label ?? reason
 
 	return (
 		<main>
@@ -167,6 +185,71 @@ const Page = async ({ searchParams }: SearchParams) => {
 				pageParam="reportsPage"
 				searchParams={relistParams}
 			/>
+
+			<section className="flex flex-col gap-3">
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<h2 className="text-2xl font-bold">Users</h2>
+					<UsersFilter search={usersSearch} role={usersRole} />
+				</div>
+
+				{users.length === 0 ? (
+					<p className="text-muted-foreground">No users found.</p>
+				) : (<div className="overflow-x-auto rounded-4xl border border-black">
+					<table className="w-full text-sm">
+						<thead>
+							<tr className="border-b border-black text-left">
+								<th className="p-3">Name</th>
+								<th className="p-3">Email</th>
+								<th className="p-3">Phone</th>
+								<th className="p-3">Role</th>
+								<th className="p-3">Verified</th>
+								<th className="p-3">Listings</th>
+								<th className="p-3">Joined</th>
+								<th className="p-3">Actions</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							{users.map((user) => (
+								<tr key={user.id} className="border-b border-border last:border-0">
+									<td className="p-3 font-semibold">
+										{user.firstName || user.lastName
+											? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+											: user.id.slice(0, 8)}
+										{user.suspended && (
+											<span className="ml-2 rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
+												Suspended
+											</span>
+										)}
+									</td>
+									<td className="p-3">{user.email ?? "—"}</td>
+									<td className="p-3">{user.phone ?? "—"}</td>
+									<td className="p-3 capitalize">{user.role}</td>
+									<td className="p-3">
+										<span className={user.phoneVerified ? "text-green-700" : "opacity-40"}>P</span>
+										{" / "}
+										<span className={user.idVerified ? "text-green-700" : "opacity-40"}>ID</span>
+									</td>
+									<td className="p-3">{user.listingCount}</td>
+									<td className="p-3">{new Date(user.createdAt).toLocaleDateString("en-GB")}</td>
+									<td className="p-3">
+										<SuspendUserButton userId={user.id} suspended={user.suspended} />
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				)}
+
+				<Pagination
+					currentPage={usersPage}
+					totalPages={usersTotalPages}
+					basePath="/admin"
+					pageParam="usersPage"
+					searchParams={usersParams}
+				/>
+			</section>
 		</main>
 	)
 }
