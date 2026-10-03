@@ -589,3 +589,41 @@ export async function replaceManagedPhotos(
 
 	return { ok: true };
 }
+
+
+/*----------------------------------------------*/
+/**
+ * Map of listingId → number of distinct tenants who revealed contact.
+ *
+ * revealContact is idempotent per (tenant, listing) — at most one row per pair —
+ * so plain row counts ARE distinct-tenant counts (no double counting).
+ * RLS (the landlord-read policy above) limits rows to the current user's own listings.
+ *
+ * Note: if /admin analytics ever needs this across ALL listings, that's the moment to
+ * build a Postgres view — deliberately not done now.
+ */
+export async function getContactRevealCounts(
+	listingIds: string[]
+): Promise<Record<string, number>> {
+	if (!listingIds.length) return {}
+
+	const { data, error } = await createSupabaseClient()
+		.from("contact_reveals")
+		.select("listing_id")
+		.in("listing_id", listingIds)
+
+	if (error) {
+		console.error("getContactRevealCounts failed:", error.message)
+		return {}
+	}
+
+	const counts: Record<string, number> = {}
+	for (const row of data ?? []) {
+		counts[row.listing_id] = (counts[row.listing_id] ?? 0) + 1
+
+		console.log(row)
+		console.log("counts[row.listing_id] ", counts[row.listing_id])
+	}
+
+	return counts
+}

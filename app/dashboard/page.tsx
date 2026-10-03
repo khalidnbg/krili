@@ -2,6 +2,7 @@ import DeleteListingButton from "@/components/DeleteListingButton";
 import Pagination from "@/components/Pagination";
 import PropertyIcon from "@/components/PropertyIcon";
 import { Button } from "@/components/ui/button";
+import { getContactRevealCounts } from "@/lib/actions/listing.action";
 import { createSupabaseClient } from "@/lib/supabase";
 import { cn, getCoverPhotoUrl, getPropertyColor } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
@@ -88,6 +89,8 @@ const Page = async ({ searchParams }: SearchParams) => {
 	const listings = result.listings
 	const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
 
+	const revealCounts = await getContactRevealCounts(listings.map((listing) => listing.id))
+
 	return (
 		<main>
 			<section className="flex flex-wrap items-center justify-between gap-4">
@@ -164,6 +167,18 @@ const Page = async ({ searchParams }: SearchParams) => {
 										>
 											{listing.status}
 										</span>
+
+										{/* contact reveal count — informational, not a badge */}
+										{(() => {
+											const count = revealCounts[listing.id] ?? 0
+											return count > 0 ? (
+												<p className="text-xs text-muted-foreground">
+													{count} tenant{count === 1 ? "" : "s"} asked for your contact
+												</p>
+											) : (
+												<p className="text-xs text-muted-foreground">No contact requests yet</p>
+											)
+										})()}
 
 										{listing.status === "rejected" && listing.rejectionReason && (
 											<p className="max-w-xs text-sm text-destructive">

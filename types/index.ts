@@ -50,6 +50,7 @@ type ModerationListing = {
 	createdAt: string
 	photos: ListingPhoto[]
 }
+
 interface CreateListing {
 	title: string
 	type: PropertyType
@@ -60,6 +61,7 @@ interface CreateListing {
 	hasCaution: boolean
 	cautionAmount?: number
 }
+
 interface GetAllListings {
 	limit?: number
 	page?: number
