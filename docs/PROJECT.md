@@ -40,11 +40,11 @@ app/
   layout.tsx                    Root layout — ClerkProvider, Navbar (isAdmin), ensureProfile
   listings/page.tsx             Browse + filters (/listings?...)
   listings/new/page.tsx         Create listing
-  listings/[id]/page.tsx        Detail — DB-first, gallery, contact reveal
+  listings/[id]/page.tsx        Detail — DB-first, gallery, contact reveal, report
   listings/[id]/edit/page.tsx   Edit listing (owner only)
-  dashboard/page.tsx            Landlord "My listings" + status
+  dashboard/page.tsx            Landlord listings + status + contact-counts
   bookmarks/page.tsx            Saved listings
-  admin/page.tsx                Moderation queue (approve/reject)
+  admin/page.tsx                Moderation + Reports queues
   sign-in|sign-up/…             Clerk pages
 components/
   Navbar.tsx                    Responsive (admin link, mobile overlay menu)
@@ -58,15 +58,20 @@ components/
   ContactReveal.tsx             Contact button → phone + WhatsApp
   BookmarkButton.tsx            Save/unsave toggle
   DeleteListingButton.tsx       Delete with confirm
+  ReportListingButton.tsx       Report a listing (reason + optional details)
   NotFound.tsx / PropertyIcon.tsx
+components/admin/
+  ListingReviewActions.tsx      Approve/Reject listings
+  ReportReviewActions.tsx       Resolve/Dismiss reports (+ unpublish)
 lib/
   schema.ts                     Shared zod listingSchema
   listing-mapper.ts             mapListingRow + getLandlordProfiles (service-role)
   supabase.ts                   createSupabaseClient + createServiceRoleClient
   admin.ts                      isAdmin (Clerk metadata OR ADMIN_USER_IDS)
-  actions/listing.action.ts     create/update/delete/replace-photos/admin actions + fetchListings
+  actions/listing.action.ts     create/update/delete/replace-photos/admin actions + fetchListings + getContactRevealCounts
   actions/bookmarks.action.ts   toggleBookmark + getSavedListingIds
   actions/contact.action.ts     revealContact (service-role phone)
+  actions/reports.action.ts     createReport / getOpenReports / resolveReport
   actions/profile.ts            ensureProfile (+ name/avatar sync from Clerk)
   schema.sql                    Full DDL + RLS policies
 types/index.ts                  Global types (Listing, ModerationListing, …)
@@ -84,16 +89,18 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 **`listing_photos`** — `listing_id → listings` (cascade), `url` (Cloudinary), `sort_order`, `is_cover`.
 **`contact_reveals`** — `listing_id`, `tenant_id → profiles`, `created_at` (demand signal; idempotent per tenant+listing).
 **`saved_listings`** — `profile_id`, `listing_id`, `created_at`, `unique(profile_id, listing_id)`.
-**`reports`** — `listing_id`, `reporter_id`, `reason`, `status` (`open|reviewed|dismissed`).
+**`reports`** — `listing_id`, `reporter_id`, `reason`, `details`, `status` (`open|reviewed|dismissed`) + partial unique index `reports_one_open_per_reporter_listing` on `(reporter_id, listing_id) WHERE status = 'open'` (a tenant can report again once no report is open).
 
 **RLS highlights** (all keyed on `auth.jwt()->>'sub'` = Clerk user id):
 - anybody selects **published** listings; owner sees own at any status
 - landlords insert/update/delete **own** listings (a **delete policy** was required to make deletion work)
 - tenants insert their own `contact_reveals` / `saved_listings`
+- landlords can **read** `contact_reveals` on their own listings → reveal counts on `/dashboard`
+- reporters insert/view their own `reports`; other tenants can't read reports (admin uses service role)
 - profiles: users only read/write **their own** row (→ landlord names/phones via service role)
 - neighborhoods: public read + signed-in insert (policy added so `createListing` can self-seed)
 
-> These ALTERs must have been applied (see the SQL in *Setup*): `profiles.first_name/last_name/email/avatar_url`, `listings.description/beds/bathrooms/furnished/pet_friendly/available_from/amenities`, `listings.property_type`, neighborhoods insert policy, **listings delete policy**.
+> These ALTERs must have been applied (see the SQL in *Setup*): `profiles.first_name/last_name/email/avatar_url`, `listings.description/beds/bathrooms/furnished/pet_friendly/available_from/amenities`, `listings.property_type`, neighborhoods insert policy, **listings delete policy**, `reports.details` + partial open-report unique index.
 
 ## 6. Auth & authorization
 
@@ -112,7 +119,7 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 | `/listings/[id]/edit` | owner | Edit listing + replace photos |
 | `/dashboard` | signed-in | My listings (status badges, edit/delete) |
 | `/bookmarks` | signed-in | Saved listings |
-| `/admin` | admin | Moderation queue |
+| `/admin` | admin | Moderation + Reports queues |
 | `/sign-in`, `/sign-up` | — | Clerk |
 
 ## 8. Features implemented (task log)
@@ -146,6 +153,11 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 **Identity**
 15. Landlord profiles — Clerk first/last name + avatar synced to `profiles` (`ensureProfile`); shown on detail page via `getLandlordProfiles`.
 
+**Reporting & trust**
+16. Reports — tenant reports a **published** listing (reason dropdown + optional details, `reportSchema`, `reports.action.ts`); admin queue shows only `open` reports with listing context.
+17. Report resolution — admin **Resolve** (report-only) or **Resolve & unpublish** (sets listing `rejected` with a reason the landlord sees on `/dashboard`), or **Dismiss**; the row leaves the open queue either way. **Re-reporting** is allowed once a report is no longer open (partial unique index).
+18. Reveal counts — `/dashboard` shows per-listing count of distinct tenants who requested contact (`getContactRevealCounts`, owner-scoped by RLS; one row per tenant/listing thanks to `revealContact` idempotency).
+
 ## 9. Key gotchas learned (important for future work)
 
 - **RHF resolver mismatch:** never use `z.boolean().default(false)` in a schema passed to `zodResolver` (input `boolean|undefined` vs output `boolean` breaks types) — use `z.boolean()` + form `defaultValues`.
@@ -156,6 +168,9 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 - **Clerk users aren't in `auth.users`** — use `auth.jwt()->>'sub'` (never `auth.uid()`) in policies.
 - **`property_type` column is required** — every query selects it; if the column is missing, queries error and pages fall back to sample data.
 - **Images** — dynamic Cloudinary/blob URLs use native `<img>` (fine for remote storage); avoid `next/image` remote-pattern config for these.
+- **Clerk at build time** — `auth()`/`currentUser()` throw outside a request (Next collects page data at build: "headers was called outside a request scope") → guard shared helpers with try/catch (`getSavedListingIds`, supabase `accessToken`, `isAdmin`).
+- **Server action files** — every exported function from a `"use server"` file must be `async`; keep pure helpers private (e.g., `mapReportRow` can't be exported).
+- **Global types** — `types/index.ts` is a script (no `export`); avoid DOM-lib name collisions (renamed `Report` → `ListingReport`).
 
 ## 10. Environment variables (`.env`)
 
@@ -203,15 +218,23 @@ create policy "Signed-in users can add neighborhoods" on public.neighborhoods
 create policy "Landlords can delete own listings" on public.listings
   for delete using ((select auth.jwt()->>'sub') = landlord_id);
 
+-- Reports feature
+alter table public.reports add column details text;
+-- (if the old always-unique constraint was applied earlier, drop it first)
+alter table public.reports drop constraint if exists reports_reporter_listing_unique;
+create unique index if not exists reports_one_open_per_reporter_listing
+  on public.reports (reporter_id, listing_id) where status = 'open';
+create index if not exists reports_status_created_at_idx
+  on public.reports (status, created_at desc);
+
 -- (optional) seed neighborhoods for the shipped cities
 ```
 
 ## 12. Known gaps / next steps
 
-- **Reports** UI (table exists) — report button on detail + admin review.
+- **Reveal analytics, deeper**: show *who* asked (name + date) and notify landlords on new reveals.
 - **Admin "landlord side"**: surface `rejection_reason` clearly and let landlords resubmit edited listings (edits already reset to `pending`).
 - **Amenities** chip selector in forms (DB/type/mapper already support it).
-- **Landlord reveal analytics** in dashboard (who asked for contact on each listing).
 - **Pagination** on browse (`limit(24)` today) and **drag-to-reorder** photos (buttons today).
 - **Production readiness**: deploy envs, Cloudinary upload-preset hardening, rate limiting on `revealContact`.
 
