@@ -1,4 +1,5 @@
 import DeleteListingButton from "@/components/DeleteListingButton";
+import MarkRentedButton from "@/components/MarkRentedButton";
 import Pagination from "@/components/Pagination";
 import PropertyIcon from "@/components/PropertyIcon";
 import { Button } from "@/components/ui/button";
@@ -188,6 +189,10 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 										{/* UI-first: handlers are wired in the next step */}
 										<div className="flex flex-wrap gap-2">
+											{(listing.status === "published" || listing.status === "rented") && (
+												<MarkRentedButton listingId={listing.id} status={listing.status} />
+											)}
+
 											<Link href={`/listings/${listing.id}/edit`}>
 												<Button type="button">Edit</Button>
 											</Link>

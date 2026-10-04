@@ -654,3 +654,49 @@ export async function getContactRevealCounts(
 
 	return counts
 }
+
+
+/**
+ * Toggles a listing between `published` and `rented` (owner only).
+ * Renting removes the listing from public browse (published-only); un-renting
+ * restores it to `published` (it was already approved).
+ */
+export async function toggleRentedStatus(id: string): Promise<AdminActionResult> {
+	const { userId } = await auth()
+	if (!userId) return { ok: false, error: "auth" }
+
+	const supabase = createSupabaseClient()
+
+	// RLS restricts reads to the owner — a non-owner's row comes back empty.
+	const { data: listing, error: readError } = await supabase
+		.from("listings")
+		.select("id, status")
+		.eq("id", id)
+		.maybeSingle()
+
+	if (readError || !listing) {
+		return { ok: false, error: readError?.message ?? "Listing not found." }
+	}
+
+	if (listing.status !== "published" && listing.status !== "rented") {
+		return { ok: false, error: "Only published listings can be marked as rented." }
+	}
+
+	const nextStatus: ListingStatus =
+		listing.status === "published" ? "rented" : "published"
+
+	const { data: updated, error } = await supabase
+		.from("listings")
+		.update({ status: nextStatus, rejection_reason: null })
+		.eq("id", id)
+		.select("id")
+		.single()
+
+	// No-match/RLS failures surface as an empty result — don't report success.
+	if (error || !updated) {
+		console.error("toggleRentedStatus failed:", error?.message ?? "listing not found")
+		return { ok: false, error: error?.message ?? "Could not update the listing." }
+	}
+
+	return { ok: true }
+}
