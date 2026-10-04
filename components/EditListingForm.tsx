@@ -240,15 +240,19 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 					/>
 				</Field>
 
-				<div className="flex gap-2">
-					<Button type="submit" className="w-full cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800">
+				<div className="flex w-full gap-2 mt-2">
+					<Button
+						type="submit"
+						className="flex-1 cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800"
+					>
 						Save changes
 					</Button>
+
 					<Button
 						type="button"
 						variant="ghost"
 						onClick={() => router.push(`/listings/${managed!.id}`)}
-						className="rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+						className="border border-black flex-1 rounded-full text-black hover:bg-neutral-100 hover:text-neutral-900"
 					>
 						Cancel
 					</Button>
