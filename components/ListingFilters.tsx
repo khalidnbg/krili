@@ -54,9 +54,9 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 	const toValue = (value: string | null) => value ?? ""
 
 	return (
-		<section className="flex flex-wrap items-end gap-4 rounded-4xl border border-black p-5">
+		<section className="flex flex-wrap items-end gap-4 rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
 			<label className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">City</span>
+				<span className="text-sm font-medium text-neutral-700">City</span>
 				<Select
 					value={city}
 					onValueChange={(value) => {
@@ -64,9 +64,8 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 						setCity(next)
 						apply({ city: next })
 					}}
-
 				>
-					<SelectTrigger className="w-full capitalize">
+					<SelectTrigger className="w-full min-w-[9rem] rounded-full border-neutral-200 capitalize">
 						<SelectValue placeholder="All cities" />
 					</SelectTrigger>
 					<SelectContent>
@@ -80,7 +79,7 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 			</label>
 
 			<label className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">Type</span>
+				<span className="text-sm font-medium text-neutral-700">Type</span>
 				<Select
 					value={type}
 					onValueChange={(value) => {
@@ -88,9 +87,8 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 						setType(next)
 						apply({ type: next })
 					}}
-
 				>
-					<SelectTrigger className="w-full capitalize">
+					<SelectTrigger className="w-full min-w-[9rem] rounded-full border-neutral-200 capitalize">
 						<SelectValue placeholder="All types" />
 					</SelectTrigger>
 					<SelectContent>
@@ -104,7 +102,7 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 			</label>
 
 			<label className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">Rooms</span>
+				<span className="text-sm font-medium text-neutral-700">Rooms</span>
 				<Select
 					value={rooms}
 					onValueChange={(value) => {
@@ -112,9 +110,8 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 						setRooms(next)
 						apply({ rooms: next })
 					}}
-
 				>
-					<SelectTrigger className="w-full">
+					<SelectTrigger className="w-full min-w-[8rem] rounded-full border-neutral-200">
 						<SelectValue placeholder="Any" />
 					</SelectTrigger>
 					<SelectContent>
@@ -128,7 +125,7 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 			</label>
 
 			<label className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">Price (MAD)</span>
+				<span className="text-sm font-medium text-neutral-700">Price (MAD)</span>
 				<div className="flex items-center gap-2">
 					<Input
 						type="number"
@@ -136,28 +133,37 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 						placeholder="Min"
 						value={minPrice}
 						onChange={(e) => setMinPrice(e.target.value)}
-						className="w-24"
+						className="w-24 rounded-full border-neutral-200"
 					/>
-					<span className="text-muted-foreground">—</span>
+					<span className="text-neutral-400">—</span>
 					<Input
 						type="number"
 						min={0}
 						placeholder="Max"
 						value={maxPrice}
 						onChange={(e) => setMaxPrice(e.target.value)}
-						className="w-24"
+						className="w-24 rounded-full border-neutral-200"
 					/>
-					<Button type="button" onClick={() => apply()}>
+					<Button
+						type="button"
+						onClick={() => apply()}
+						className="rounded-full bg-neutral-900 text-white hover:bg-neutral-800"
+					>
 						Apply
 					</Button>
 				</div>
 			</label>
 
-			<Button type="button" variant="ghost" onClick={clear}>
+			<Button
+				type="button"
+				variant="ghost"
+				onClick={clear}
+				className="rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+			>
 				Clear filters
 			</Button>
 
-			<p className="text-sm font-semibold text-muted-foreground">
+			<p className="ml-auto text-sm font-semibold text-[#FE5933]">
 				{resultCount} listing{resultCount === 1 ? "" : "s"} found
 			</p>
 		</section>

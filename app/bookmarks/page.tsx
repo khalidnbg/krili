@@ -14,11 +14,15 @@ const Page = async () => {
 	const savedIds = new Set(await getSavedListingIds())
 	if (!savedIds.size) {
 		return (
-			<main>
-				<section className="flex flex-col items-center gap-4 rounded-4xl border border-black px-8 py-14 text-center">
-					<h1>No saved listings yet</h1>
-					<p className="text-muted-foreground">Tap the bookmark on any listing to keep it here.</p>
-					<Link href="/listings" className="btn-primary w-fit">Browse listings
+			<main className="flex flex-col gap-8 px-4 py-10 md:px-8 md:py-14">
+				<section className="flex flex-col items-center gap-4 rounded-3xl border border-neutral-200/80 bg-white px-8 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+					<h1 className="text-2xl font-bold text-neutral-900">No saved listings yet</h1>
+					<p className="text-neutral-500">Tap the bookmark on any listing to keep it here.</p>
+					<Link
+						href="/listings"
+						className="w-fit rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+					>
+						Browse listings
 					</Link>
 				</section>
 			</main>
@@ -61,18 +65,20 @@ const Page = async () => {
 	})
 
 	return (
-		<main>
-			<section className="flex flex-col gap-2">
-				<h1>Saved listings</h1>
-				<p className="text-lg text-muted-foreground">{listings.length} saved</p>
+		<main className="flex flex-col gap-8 px-4 py-10 md:px-8 md:py-14">
+			<section className="flex flex-col gap-3">
+				<h1 className="text-4xl font-bold tracking-tight text-neutral-900 md:text-5xl">
+					Saved listings
+				</h1>
+				<p className="text-lg text-neutral-500">{listings.length} saved</p>
 			</section>
 
 			{listings.length === 0 ? (
-				<section className="rounded-4xl border border-black px-8 py-14 text-center">
-					<p className="text-muted-foreground">Your saved listings didn't come back — check back later.</p>
+				<section className="rounded-3xl border border-neutral-200/80 bg-white px-8 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+					<p className="text-neutral-500">Your saved listings didn't come back — check back later.</p>
 				</section>
 			) : (
-				<section className="listings-grid">
+				<section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{listings.map((listing) => (
 						<ListingCard key={listing.id} listing={listing} initialSaved={true} />
 					))}

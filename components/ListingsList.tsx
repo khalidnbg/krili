@@ -18,37 +18,38 @@ interface ListingsListProps {
 
 const ListingsList = ({ title, listings, classNames }: ListingsListProps) => {
 	return (
-		<article className={cn("listing-list", classNames)}>
-			<h2 className="font-bold text-3xl">{title}</h2>
+		<article className={cn("flex flex-col gap-5", classNames)}>
+			<h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
 
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead className="text-lg w-2/3">Property</TableHead>
-						<TableHead className="text-lg">Type</TableHead>
-						<TableHead className="text-lg text-right">Price</TableHead>
-						<TableHead className="text-lg text-right">Rooms</TableHead>
-					</TableRow>
-				</TableHeader>
+			<div className="overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+				<Table>
+					<TableHeader>
+						<TableRow className="border-neutral-200/80 hover:bg-transparent">
+							<TableHead className="w-2/3 text-sm font-medium text-neutral-500">Property</TableHead>
+							<TableHead className="text-sm font-medium text-neutral-500">Type</TableHead>
+							<TableHead className="text-right text-sm font-medium text-neutral-500">Price</TableHead>
+							<TableHead className="text-right text-sm font-medium text-neutral-500">Rooms</TableHead>
+						</TableRow>
+					</TableHeader>
 
-				<TableBody>
-					{listings?.map((listing) => {
-						return (
-							<TableRow key={listing.id}>
+					<TableBody>
+						{listings?.map((listing) => (
+							<TableRow
+								key={listing.id}
+								className="border-neutral-100 transition-colors hover:bg-neutral-50"
+							>
 								<TableCell>
 									<Link href={`/listings/${listing.id}`}>
-										<div className="flex items-center gap-2">
+										<div className="flex items-center gap-3 py-1">
 											<div
-												className="size-18 flex items-center justify-center rounded-lg max-md:hidden"
+												className="flex size-14 shrink-0 items-center justify-center rounded-xl max-md:hidden"
 												style={{ backgroundColor: getPropertyColor(listing.type) }}
 											>
-												<PropertyIcon type={listing.type} className="size-8" />
+												<PropertyIcon type={listing.type} className="size-6" />
 											</div>
-											<div className="flex flex-col gap-2">
-												<p className="font-bold text-2xl">
-													{listing.title}
-												</p>
-												<p className="text-lg">
+											<div className="flex flex-col gap-1">
+												<p className="text-base font-bold text-neutral-900">{listing.title}</p>
+												<p className="text-sm text-neutral-500">
 													{listing.neighborhood} · {listing.city}
 												</p>
 											</div>
@@ -57,30 +58,27 @@ const ListingsList = ({ title, listings, classNames }: ListingsListProps) => {
 								</TableCell>
 
 								<TableCell>
-									<div className="property-badge w-fit max-md:hidden">{listing.type}</div>
-								</TableCell>
-
-								<TableCell>
-									<div className="flex items-center gap-2 w-full justify-end">
-										<p className="text-2xl">
-											{listing.price.toLocaleString()} <span className="max-md:hidden"> MAD</span>
-										</p>
+									<div className="w-fit rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium capitalize text-neutral-700 max-md:hidden">
+										{listing.type}
 									</div>
 								</TableCell>
 
-								<TableCell>
-									<div className="flex items-center gap-2 w-full justify-end">
-										<p className="text-2xl">
-											{listing.rooms} <span className="max-md:hidden">rooms</span>
-										</p>
-									</div>
+								<TableCell className="text-right">
+									<p className="font-medium text-neutral-900">
+										{listing.price.toLocaleString()} <span className="text-neutral-400 max-md:hidden">MAD</span>
+									</p>
+								</TableCell>
+
+								<TableCell className="text-right">
+									<p className="font-medium text-neutral-900">
+										{listing.rooms} <span className="text-neutral-400 max-md:hidden">rooms</span>
+									</p>
 								</TableCell>
 							</TableRow>
-						)
-					})}
-				</TableBody>
-			</Table>
-
+						))}
+					</TableBody>
+				</Table>
+			</div>
 		</article>
 	)
 }

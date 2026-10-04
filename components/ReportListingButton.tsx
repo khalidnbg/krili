@@ -49,7 +49,7 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 
 	if (reported) {
 		return (
-			<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
+			<span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-500">
 				<Flag className="size-3.5" /> Reported
 			</span>
 		)
@@ -61,17 +61,17 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 				<button
 					type="button"
 					onClick={() => setOpen(true)}
-					className="inline-flex items-center gap-1.5 self-end rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+					className="inline-flex items-center gap-1.5 self-end rounded-full px-3 py-1.5 text-xs font-medium text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
 				>
 					<Flag className="size-3.5" /> Report listing
 				</button>
 			) : (
-				<div className="flex w-72 flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-lg">
-					<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+				<div className="flex w-72 flex-col gap-3 rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-12px_rgba(0,0,0,0.14)]">
+					<p className="text-xs font-semibold text-neutral-500">
 						Report this listing
 					</p>
 					<Select value={reason} onValueChange={(value) => setReason(value ?? "")}>
-						<SelectTrigger className="w-full rounded-full">
+						<SelectTrigger className="w-full rounded-full border-neutral-200">
 							<SelectValue placeholder="Reason" />
 						</SelectTrigger>
 						<SelectContent>
@@ -87,14 +87,14 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 						placeholder="Details (optional)"
 						value={details}
 						onChange={(e) => setDetails(e.target.value)}
-						className="rounded-xl"
+						className="rounded-xl border-neutral-200"
 					/>
 					<div className="flex gap-2">
 						<Button
 							type="button"
 							disabled={busy || !reason}
 							onClick={handleSubmit}
-							className="flex-1 rounded-full shadow-sm transition-transform active:scale-[0.98]"
+							className="flex-1 rounded-full bg-neutral-900 shadow-sm transition-transform hover:bg-neutral-800 active:scale-[0.98]"
 						>
 							{busy ? "Submitting…" : "Submit report"}
 						</Button>
@@ -106,7 +106,7 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 								setReason("")
 								setDetails("")
 							}}
-							className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+							className="rounded-full px-3 py-2 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50"
 						>
 							Cancel
 						</button>
@@ -114,7 +114,7 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
 				</div>
 			)}
 			{error && (
-				<p className="self-end rounded-md bg-destructive/10 px-3 py-1 text-xs text-destructive">
+				<p className="self-end rounded-full bg-red-50 px-3 py-1 text-xs text-red-600">
 					{error}
 				</p>
 			)}

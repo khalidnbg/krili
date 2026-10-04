@@ -13,10 +13,10 @@ import { redirect } from "next/navigation";
 type EmbeddedNeighborhood = { city?: string; name?: string }
 
 const statusStyles: Record<ListingStatus, string> = {
-	pending: "bg-muted text-muted-foreground",
-	published: "bg-green-100 text-green-700",
-	rejected: "bg-destructive/10 text-destructive",
-	rented: "bg-muted text-muted-foreground",
+	pending: "bg-amber-50 text-amber-700",
+	published: "bg-emerald-50 text-emerald-700",
+	rejected: "bg-red-50 text-red-600",
+	rented: "bg-neutral-100 text-neutral-500",
 }
 
 const fetchMyListings = async (
@@ -44,7 +44,6 @@ const fetchMyListings = async (
 	}
 
 	const listings = (data ?? []).map((row) => {
-		// supabase-js types embeds as arrays; PostgREST returns objects here.
 		const rawNeighborhood = row.neighborhoods as unknown as
 			| EmbeddedNeighborhood
 			| EmbeddedNeighborhood[]
@@ -93,26 +92,34 @@ const Page = async ({ searchParams }: SearchParams) => {
 	const revealCounts = await getContactRevealCounts(listings.map((listing) => listing.id))
 
 	return (
-		<main>
+		<main className="flex flex-col gap-8 px-4 py-10 md:px-8 md:py-14">
 			<section className="flex flex-wrap items-center justify-between gap-4">
 				<div className="flex flex-col gap-2">
-					<h1>My listings</h1>
-					<p className="text-lg text-muted-foreground">
+					<h1 className="text-4xl font-bold tracking-tight text-neutral-900 md:text-5xl">
+						My listings
+					</h1>
+					<p className="text-lg text-neutral-500">
 						{listings.length} listing{listings.length === 1 ? "" : "s"} — manage what you've posted.
 					</p>
 				</div>
-				<Link href="/listings/new" className="btn-primary">
+				<Link
+					href="/listings/new"
+					className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+				>
 					+ New listing
 				</Link>
 			</section>
 
 			{listings.length === 0 ? (
-				<section className="flex flex-col items-center gap-4 rounded-4xl border border-black px-8 py-14 text-center">
-					<h2 className="text-2xl font-bold">You haven't posted anything yet</h2>
-					<p className="text-muted-foreground">
+				<section className="flex flex-col items-center gap-4 rounded-3xl border border-neutral-200/80 bg-white px-8 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+					<h2 className="text-2xl font-bold text-neutral-900">You haven't posted anything yet</h2>
+					<p className="text-neutral-500">
 						Create your first listing — it will appear here after a quick review.
 					</p>
-					<Link href="/listings/new" className="btn-primary w-fit">
+					<Link
+						href="/listings/new"
+						className="w-fit rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+					>
 						Post your first listing
 					</Link>
 				</section>
@@ -121,12 +128,15 @@ const Page = async ({ searchParams }: SearchParams) => {
 					{listings.map((listing) => {
 						const cover = getCoverPhotoUrl(listing)
 						return (
-							<article key={listing.id} className="overflow-hidden rounded-4xl border border-black">
+							<article
+								key={listing.id}
+								className="overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]"
+							>
 								<div className="flex flex-wrap items-center gap-4 p-5 md:flex-nowrap">
 									{/* thumbnail */}
 									<Link href={`/listings/${listing.id}`} className="shrink-0">
 										<div
-											className="flex size-28 items-center justify-center overflow-hidden rounded-xl"
+											className="flex size-28 items-center justify-center overflow-hidden rounded-2xl"
 											style={{ backgroundColor: getPropertyColor(listing.type) }}
 										>
 											{cover ? (
@@ -143,17 +153,19 @@ const Page = async ({ searchParams }: SearchParams) => {
 									{/* details */}
 									<Link href={`/listings/${listing.id}`} className="flex min-w-0 flex-col gap-1.5">
 										<div className="flex flex-wrap items-center gap-2">
-											<h2 className="text-xl font-bold">{listing.title}</h2>
-											<div className="property-badge">{listing.type}</div>
+											<h2 className="text-xl font-bold text-neutral-900">{listing.title}</h2>
+											<div className="w-fit rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium capitalize text-neutral-700">
+												{listing.type}
+											</div>
 										</div>
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-neutral-500">
 											{listing.neighborhood} · {listing.city} — {listing.rooms} room{listing.rooms > 1 ? "s" : ""}
 										</p>
-										<p className="text-lg font-bold">
+										<p className="text-lg font-bold text-neutral-900">
 											{listing.price.toLocaleString()}{" "}
-											<span className="text-sm font-normal text-muted-foreground">MAD/month</span>
+											<span className="text-sm font-normal text-neutral-500">MAD/month</span>
 										</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-xs text-neutral-400">
 											Posted {new Date(listing.createdAt).toLocaleDateString("en-GB")}
 										</p>
 									</Link>
@@ -162,46 +174,47 @@ const Page = async ({ searchParams }: SearchParams) => {
 									<div className="flex flex-col gap-2 md:ml-auto">
 										<span
 											className={cn(
-												"w-fit rounded-md px-2 py-0.5 text-xs font-semibold capitalize",
+												"w-fit rounded-full px-3 py-1 text-xs font-semibold capitalize",
 												statusStyles[listing.status]
 											)}
 										>
 											{listing.status}
 										</span>
 
-										{/* contact reveal count — informational, not a badge */}
 										{(() => {
 											const count = revealCounts[listing.id] ?? 0
 											return count > 0 ? (
-												<p className="text-xs text-muted-foreground">
+												<p className="text-xs text-neutral-500">
 													{count} tenant{count === 1 ? "" : "s"} asked for your contact
 												</p>
 											) : (
-												<p className="text-xs text-muted-foreground">No contact requests yet</p>
+												<p className="text-xs text-neutral-400">No contact requests yet</p>
 											)
 										})()}
 
 										{listing.status === "rejected" && listing.rejectionReason && (
-											<p className="max-w-xs text-sm text-destructive">
+											<p className="max-w-xs text-sm text-red-600">
 												Reason: {listing.rejectionReason}
 											</p>
 										)}
 
-										{/* UI-first: handlers are wired in the next step */}
 										<div className="flex flex-wrap gap-2">
 											{(listing.status === "published" || listing.status === "rented") && (
 												<MarkRentedButton listingId={listing.id} status={listing.status} />
 											)}
 
 											<Link href={`/listings/${listing.id}/edit`}>
-												<Button type="button">Edit</Button>
+												<Button type="button" className="rounded-full bg-neutral-900 hover:bg-neutral-800">
+													Edit
+												</Button>
 											</Link>
 											<Link href={`/listings/${listing.id}/edit`}>
-												<Button type="button" variant="outline">Photos</Button>
+												<Button type="button" variant="outline" className="rounded-full border-neutral-200">
+													Photos
+												</Button>
 											</Link>
 											<DeleteListingButton listingId={listing.id} />
 										</div>
-
 									</div>
 								</div>
 							</article>

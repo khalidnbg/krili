@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select"
 import { cities, propertyTypes } from "@/constants"
 
+const inputClass = "rounded-xl border-neutral-200"
+
 interface EditListingFormProps {
 	managed: Awaited<ReturnType<typeof getManagedListing>>
 }
@@ -76,11 +78,11 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 	}
 
 	return (
-		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+		<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6 rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)] md:p-8">
 			<FieldGroup>
 				<Field>
-					<FieldLabel htmlFor="title">Listing title</FieldLabel>
-					<Input id="title" placeholder="Ex. Bright studio in Maârif" {...form.register("title")} />
+					<FieldLabel htmlFor="title" className="text-neutral-700">Listing title</FieldLabel>
+					<Input id="title" placeholder="Ex. Bright studio in Maârif" className={inputClass} {...form.register("title")} />
 					{form.formState.errors.title && (
 						<FieldError>{form.formState.errors.title.message}</FieldError>
 					)}
@@ -91,9 +93,9 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 					name="type"
 					render={({ field }) => (
 						<Field>
-							<FieldLabel htmlFor="type">Property type</FieldLabel>
+							<FieldLabel htmlFor="type" className="text-neutral-700">Property type</FieldLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
-								<SelectTrigger id="type" className="w-full capitalize">
+								<SelectTrigger id="type" className={`w-full capitalize ${inputClass}`}>
 									<SelectValue placeholder="Select the type" />
 								</SelectTrigger>
 								<SelectContent>
@@ -112,25 +114,24 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 				/>
 
 				<Field>
-					<FieldLabel htmlFor="rooms">Rooms</FieldLabel>
-					<Input id="rooms" type="number" min={1} {...form.register("rooms")} />
+					<FieldLabel htmlFor="rooms" className="text-neutral-700">Rooms</FieldLabel>
+					<Input id="rooms" type="number" min={1} className={inputClass} {...form.register("rooms")} />
 					{form.formState.errors.rooms && (
 						<FieldError>{form.formState.errors.rooms.message}</FieldError>
 					)}
 				</Field>
 
 				<Field>
-					<FieldLabel htmlFor="price">Rent per month (MAD)</FieldLabel>
-					<Input id="price" type="number" min={1} {...form.register("price")} />
+					<FieldLabel htmlFor="price" className="text-neutral-700">Rent per month (MAD)</FieldLabel>
+					<Input id="price" type="number" min={1} className={inputClass} {...form.register("price")} />
 					{form.formState.errors.price && (
 						<FieldError>{form.formState.errors.price.message}</FieldError>
 					)}
 				</Field>
 
-
 				<Field>
-					<FieldLabel htmlFor="neighborhood">Neighborhood</FieldLabel>
-					<Input id="neighborhood" placeholder="Ex. Maârif" {...form.register("neighborhood")} />
+					<FieldLabel htmlFor="neighborhood" className="text-neutral-700">Neighborhood</FieldLabel>
+					<Input id="neighborhood" placeholder="Ex. Maârif" className={inputClass} {...form.register("neighborhood")} />
 					{form.formState.errors.neighborhood && (
 						<FieldError>{form.formState.errors.neighborhood.message}</FieldError>
 					)}
@@ -141,9 +142,9 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 					name="city"
 					render={({ field }) => (
 						<Field>
-							<FieldLabel htmlFor="city">City</FieldLabel>
+							<FieldLabel htmlFor="city" className="text-neutral-700">City</FieldLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
-								<SelectTrigger id="city" className="w-full capitalize">
+								<SelectTrigger id="city" className={`w-full capitalize ${inputClass}`}>
 									<SelectValue placeholder="Select the city" />
 								</SelectTrigger>
 								<SelectContent>
@@ -162,24 +163,25 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 				/>
 
 				<Field>
-					<FieldLabel htmlFor="hasCaution" className="flex items-center gap-2 cursor-pointer">
+					<FieldLabel htmlFor="hasCaution" className="flex cursor-pointer items-center gap-2 text-neutral-700">
 						<input
 							id="hasCaution"
 							type="checkbox"
 							{...form.register("hasCaution")}
-							className="size-4 accent-black"
+							className="size-4 accent-[#FE5933]"
 						/>
 						Security deposit (caution)
 					</FieldLabel>
 				</Field>
 
 				<Field data-invalid={!!form.formState.errors.description}>
-					<FieldLabel htmlFor="description">Description</FieldLabel>
+					<FieldLabel htmlFor="description" className="text-neutral-700">Description</FieldLabel>
 					<Textarea
 						id="description"
 						rows={4}
 						placeholder="Describe the property, features, and who it's ideal for…"
 						aria-invalid={!!form.formState.errors.description}
+						className={inputClass}
 						{...form.register("description")}
 					/>
 					{form.formState.errors.description && (
@@ -189,46 +191,47 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 
 				<div className="grid grid-cols-2 gap-4">
 					<Field data-invalid={!!form.formState.errors.beds}>
-						<FieldLabel htmlFor="beds">Beds</FieldLabel>
+						<FieldLabel htmlFor="beds" className="text-neutral-700">Beds</FieldLabel>
 						<Input
 							id="beds"
 							type="number"
 							min={1}
 							aria-invalid={!!form.formState.errors.beds}
+							className={inputClass}
 							{...form.register("beds")}
 						/>
 					</Field>
 					<Field data-invalid={!!form.formState.errors.bathrooms}>
-						<FieldLabel htmlFor="bathrooms">Bathrooms</FieldLabel>
+						<FieldLabel htmlFor="bathrooms" className="text-neutral-700">Bathrooms</FieldLabel>
 						<Input
 							id="bathrooms"
 							type="number"
 							min={1}
 							aria-invalid={!!form.formState.errors.bathrooms}
+							className={inputClass}
 							{...form.register("bathrooms")}
 						/>
 					</Field>
 				</div>
 
 				<Field>
-					<FieldLabel className="flex items-center gap-2 cursor-pointer">
-						<input type="checkbox" {...form.register("furnished")} className="size-4 accent-black" />
+					<FieldLabel className="flex cursor-pointer items-center gap-2 text-neutral-700">
+						<input type="checkbox" {...form.register("furnished")} className="size-4 accent-[#FE5933]" />
 						Furnished
 					</FieldLabel>
-					<FieldLabel className="flex items-center gap-2 cursor-pointer">
-						<input type="checkbox" {...form.register("petFriendly")} className="size-4 accent-black" />
+					<FieldLabel className="flex cursor-pointer items-center gap-2 text-neutral-700">
+						<input type="checkbox" {...form.register("petFriendly")} className="size-4 accent-[#FE5933]" />
 						Pet friendly
 					</FieldLabel>
 				</Field>
 
 				<Field>
-					<FieldLabel htmlFor="availableFrom">Available from</FieldLabel>
-					<Input id="availableFrom" type="date" {...form.register("availableFrom")} />
+					<FieldLabel htmlFor="availableFrom" className="text-neutral-700">Available from</FieldLabel>
+					<Input id="availableFrom" type="date" className={inputClass} {...form.register("availableFrom")} />
 				</Field>
 
-
 				<Field>
-					<FieldLabel>Photos</FieldLabel>
+					<FieldLabel className="text-neutral-700">Photos</FieldLabel>
 					<PhotoManager
 						initialPhotos={managed?.photos ?? []}
 						onChange={setPhotoState}
@@ -238,8 +241,15 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 				</Field>
 
 				<div className="flex gap-2">
-					<Button type="submit" className="w-full cursor-pointer">Save changes</Button>
-					<Button type="button" variant="ghost" onClick={() => router.push(`/listings/${managed!.id}`)}>
+					<Button type="submit" className="w-full cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800">
+						Save changes
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						onClick={() => router.push(`/listings/${managed!.id}`)}
+						className="rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+					>
 						Cancel
 					</Button>
 				</div>
