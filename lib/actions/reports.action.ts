@@ -5,6 +5,8 @@ import { ReportFormValues, reportSchema } from "../schema";
 import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { isAdmin } from "../admin";
 import { assertNotSuspended } from "../auth-guards";
+import { listingUnpublishedFromReportEmail } from "../email/templates";
+import { sendLandlordStatusEmail } from "../email/send";
 
 /* ---------------- tenant: create report ---------------- */
 export type ReportActionResult =
@@ -187,6 +189,24 @@ export async function resolveReport(
 			.eq("id", report.listing_id)
 			.select("id")
 			.single()
+
+		// Email the landlord only on the "unpublish" branch.
+		if (listingAction.newStatus === "rejected") {
+			const { data: target } = await service
+				.from("listings")
+				.select("title, landlord_id")
+				.eq("id", report.listing_id)
+				.maybeSingle()
+
+			if (target?.landlord_id) {
+				const reason = listingAction.reason?.trim() || "Unpublished after a report"
+				const { subject, html } = listingUnpublishedFromReportEmail(
+					{ title: target.title },
+					reason
+				)
+				await sendLandlordStatusEmail(service, target.landlord_id, subject, html)
+			}
+		}
 
 		if (listingError || !updatedListing) {
 			console.error("resolveReport listing update failed:", listingError?.message ?? "listing not found")

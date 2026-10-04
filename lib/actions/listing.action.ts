@@ -7,6 +7,8 @@ import { ListingFormValues, listingSchema } from "../schema";
 import { createHash } from "node:crypto";
 import { getLandlordProfiles, mapListingRow } from "../listing-mapper";
 import { assertNotSuspended } from "../auth-guards";
+import { listingApprovedEmail, listingRejectedEmail } from "../email/templates";
+import { sendLandlordStatusEmail } from "../email/send";
 
 type EmbeddedNeighborhood = {
 	city?: string
@@ -329,18 +331,30 @@ export async function getModerationQueue(
 	}
 }
 
-
 export async function approveListing(id: string): Promise<AdminActionResult> {
 	if (!(await isAdmin())) return { ok: false, error: "Forbidden" }
 	const supabase = adminSupabase()
 	if (!supabase) return { ok: false, error: "Service role key not configured" }
+
+	const { data: listing } = await supabase
+		.from("listings")
+		.select("id, title, landlord_id")
+		.eq("id", id)
+		.maybeSingle()
 
 	const { error } = await supabase
 		.from("listings")
 		.update({ status: "published", rejection_reason: null })
 		.eq("id", id)
 
-	return error ? { ok: false, error: error.message } : { ok: true }
+	if (error) return { ok: false, error: error.message }
+
+	if (listing?.landlord_id) {
+		const { subject, html } = listingApprovedEmail({ title: listing.title, id: listing.id })
+		await sendLandlordStatusEmail(supabase, listing.landlord_id, subject, html)
+	}
+
+	return { ok: true }
 }
 
 export async function rejectListing(id: string, reason: string): Promise<AdminActionResult> {
@@ -350,12 +364,25 @@ export async function rejectListing(id: string, reason: string): Promise<AdminAc
 	const supabase = adminSupabase()
 	if (!supabase) return { ok: false, error: "Service role key not configured" }
 
+	const { data: listing } = await supabase
+		.from("listings")
+		.select("id, title, landlord_id")
+		.eq("id", id)
+		.maybeSingle()
+
 	const { error } = await supabase
 		.from("listings")
 		.update({ status: "rejected", rejection_reason: trimmed })
 		.eq("id", id)
 
-	return error ? { ok: false, error: error.message } : { ok: true }
+	if (error) return { ok: false, error: error.message }
+
+	if (listing?.landlord_id) {
+		const { subject, html } = listingRejectedEmail({ title: listing.title }, trimmed)
+		await sendLandlordStatusEmail(supabase, listing.landlord_id, subject, html)
+	}
+
+	return { ok: true }
 }
 
 /* ---------- helpers ---------- */
