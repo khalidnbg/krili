@@ -4,7 +4,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { } from "@/components/ListingForm";
 import { ListingFormValues, listingSchema } from "../schema";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { getLandlordProfiles, mapListingRow } from "../listing-mapper";
 import { assertNotSuspended } from "../auth-guards";
 import { listingApprovedEmail, listingRejectedEmail } from "../email/templates";
@@ -46,48 +46,29 @@ const adminSupabase = () => {
 	return createServiceRoleClient()
 }
 
-async function uploadPhotoToCloudinary(file: File, publicId: string) {
+export async function createCloudinaryUploadSignature() {
+	const { userId } = await auth()
+	if (!userId) throw new Error("You must be signed in to upload photos.")
+
 	const cloudName = process.env.CLOUDINARY_CLOUD_NAME
 	const apiKey = process.env.CLOUDINARY_API_KEY
 	const apiSecret = process.env.CLOUDINARY_API_SECRET
-
 	if (!cloudName || !apiKey || !apiSecret) {
-		throw new Error("Cloudinary environment variables are missing")
+		throw new Error("Image uploads are not configured.")
 	}
 
 	const timestamp = Math.floor(Date.now() / 1000).toString()
-
-	// Signed upload: alphabetically-sorted params, joined with "&", + API secret, SHA1.
+	const publicId = `${userId}/listing-${randomUUID()}`
 	const signature = createHash("sha1")
 		.update(`public_id=${publicId}&timestamp=${timestamp}${apiSecret}`)
 		.digest("hex")
 
-	const form = new FormData()
-	form.append("file", file)
-	form.append("public_id", publicId)
-	form.append("timestamp", timestamp)
-	form.append("api_key", apiKey)
-	form.append("signature", signature)
-
-	const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-		method: "POST",
-		body: form,
-	})
-
-	const payload = (await response.json()) as { secure_url?: string; error?: { message?: string } }
-
-	if (!response.ok || !payload.secure_url) {
-		throw new Error(payload.error?.message ?? `Cloudinary upload failed (HTTP ${response.status})`)
-	}
-
-	// Serve auto-optimized images straight from Cloudinary's CDN.
-	return payload.secure_url.replace("/image/upload/", "/image/upload/q_auto,f_auto/")
-
+	return { cloudName, apiKey, publicId, signature, timestamp }
 }
 
 export async function createListing(
 	input: ListingFormValues,
-	photos: File[] = [],
+	photoUrls: string[] = [],
 	coverIndex = 0,
 ) {
 	// Never trust the client — re-validate on the server.
@@ -168,46 +149,29 @@ export async function createListing(
 		return null;
 	}
 
-	// 3) Upload photos to Cloudinary and persist them in listing_photos.
-	//    Per-photo failures are logged and don't roll back the listing.
-	const uploaded: ListingPhoto[] = []
+	// 3) The browser uploads images directly to Cloudinary. This action receives only URLs,
+	// avoiding Vercel's request-body limit for camera photos.
+	const uploaded: ListingPhoto[] = photoUrls.slice(0, 5).map((url, index) => ({
+		url,
+		sort_order: index,
+		is_cover: index === coverIndex,
+	}))
 
-	if (photos.length > 0) {
-		const results = await Promise.allSettled(
-			photos.map((file, index) =>
-				uploadPhotoToCloudinary(file, `${userId}/${data.id}-${index}`).then((url) => ({
-					url,
-					sort_order: index,
-					is_cover: index === coverIndex,
+	if (uploaded.length > 0) {
+		const { error: photosError } = await supabase
+			.from("listing_photos")
+			.insert(
+				uploaded.map((photo) => ({
+					listing_id: data.id,
+					url: photo.url,
+					sort_order: photo.sort_order,
+					is_cover: photo.is_cover,
 				}))
 			)
-		)
 
-		for (const result of results) {
-			if (result.status === "fulfilled") {
-				uploaded.push(result.value)
-			} else {
-				console.error("Photo upload failed:", result.reason)
-			}
+		if (photosError) {
+			console.error("listing_photos insert failed:", photosError.message)
 		}
-
-		if (uploaded.length > 0) {
-			const { error: photosError } = await supabase
-				.from("listing_photos")
-				.insert(
-					uploaded.map((photo) => ({
-						listing_id: data.id,
-						url: photo.url,
-						sort_order: photo.sort_order,
-						is_cover: photo.is_cover,
-					}))
-				)
-
-			if (photosError) {
-				console.error("listing_photos insert failed:", photosError.message)
-			}
-		}
-
 	}
 
 	return {
@@ -571,7 +535,7 @@ export async function deleteManagedListing(id: string) {
 export async function replaceManagedPhotos(
 	id: string,
 	keep: { url: string }[],
-	newFiles: File[],
+	newPhotoUrls: string[],
 	coverIndex = 0
 ) {
 	const { userId } = await auth();
@@ -591,19 +555,8 @@ export async function replaceManagedPhotos(
 
 	await Promise.all(removed.map(destroyCloudinaryUrl));
 
-	// Upload the new files (appended after the kept ones).
-	const uploaded: { url: string }[] = []
-	if (newFiles.length > 0) {
-		const results = await Promise.allSettled(
-			newFiles.map((file, index) =>
-				uploadPhotoToCloudinary(file, `${userId}/${id}-${Date.now()}-${index}`).then((url) => ({ url }))
-			)
-		)
-		for (const result of results) {
-			if (result.status === "fulfilled") uploaded.push(result.value)
-			else console.error("replaceManagedPhotos upload failed:", result.reason)
-		}
-	}
+	// New images were uploaded directly from the browser to Cloudinary.
+	const uploaded = newPhotoUrls.slice(0, Math.max(0, 5 - keep.length)).map((url) => ({ url }))
 
 	// Rebuild the photo set from scratch (kept + new) with the client's ordering/cover.
 	const finalList = [...keep, ...uploaded];

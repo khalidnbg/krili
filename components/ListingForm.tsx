@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { cities, propertyTypes } from "@/constants"
 import { createListing } from "@/lib/actions/listing.action"
+import { uploadListingPhotos } from "@/lib/cloudinary-upload"
 import { listingSchema } from "@/lib/schema"
 import PhotoUploader, { PhotoUploaderState } from "./PhotoUploader"
 import { useState } from "react"
@@ -32,6 +33,8 @@ const inputClass = "rounded-xl border-neutral-200"
 const ListingForm = () => {
 	const router = useRouter()
 	const [photos, setPhotos] = useState<PhotoUploaderState>({ files: [], coverIndex: 0 })
+	const [submitError, setSubmitError] = useState<string | null>(null)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const form = useForm<z.infer<typeof listingSchema>>({
 		resolver: zodResolver(listingSchema),
@@ -55,13 +58,22 @@ const ListingForm = () => {
 	const hasCaution = useWatch({ control: form.control, name: "hasCaution" })
 
 	const onSubmit = async (values: z.infer<typeof listingSchema>) => {
-		const listing = await createListing(values, photos.files, photos.coverIndex)
+		setSubmitError(null)
+		setIsSubmitting(true)
 
-		if (listing) {
+		try {
+			const photoUrls = await uploadListingPhotos(photos.files)
+			const listing = await createListing(values, photoUrls, photos.coverIndex)
+
+			if (!listing || !("id" in listing)) {
+				throw new Error("Your listing could not be published. Please try again.")
+			}
+
 			router.push(`/listings/${listing.id}`)
-		} else {
-			console.error("Failed to create listing")
-			router.push("/")
+		} catch (error) {
+			setSubmitError(error instanceof Error ? error.message : "Your listing could not be published. Please try again.")
+		} finally {
+			setIsSubmitting(false)
 		}
 	}
 
@@ -275,8 +287,14 @@ const ListingForm = () => {
 					</FieldDescription>
 				</Field>
 
-				<Button type="submit" className="w-full cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800">
-					Publish listing
+				{submitError && <FieldError>{submitError}</FieldError>}
+
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					className="w-full cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800"
+				>
+					{isSubmitting ? "Uploading photos…" : "Publish listing"}
 				</Button>
 			</FieldGroup>
 		</form>

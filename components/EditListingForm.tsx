@@ -8,6 +8,7 @@ import { z } from "zod"
 import PhotoManager, { type ManagedPhotosState } from "@/components/PhotoManager"
 import { listingSchema } from "@/lib/schema"
 import { getManagedListing, replaceManagedPhotos, updateManagedListing } from "@/lib/actions/listing.action"
+import { uploadListingPhotos } from "@/lib/cloudinary-upload"
 import { Button } from "@/components/ui/button"
 import {
 	Field,
@@ -39,6 +40,8 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 		newFiles: [],
 		coverIndex: Math.max(0, (managed?.photos ?? []).findIndex((photo) => photo.is_cover)),
 	})
+	const [submitError, setSubmitError] = useState<string | null>(null)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const form = useForm<z.infer<typeof listingSchema>>({
 		resolver: zodResolver(listingSchema),
@@ -63,18 +66,29 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 	})
 
 	const onSubmit = async (values: z.infer<typeof listingSchema>) => {
-		const updated = await updateManagedListing(managed!.id, values)
-		if (!updated) return
+		setSubmitError(null)
+		setIsSubmitting(true)
 
-		await replaceManagedPhotos(
-			managed!.id,
-			photoState.existing,
-			photoState.newFiles,
-			photoState.coverIndex
-		)
+		try {
+			const newPhotoUrls = await uploadListingPhotos(photoState.newFiles)
+			const updated = await updateManagedListing(managed!.id, values)
+			if (!updated) throw new Error("Your changes could not be saved. Please try again.")
 
-		router.push(`/listings/${managed!.id}`)
-		router.refresh()
+			const photosResult = await replaceManagedPhotos(
+				managed!.id,
+				photoState.existing,
+				newPhotoUrls,
+				photoState.coverIndex
+			)
+			if (!photosResult.ok) throw new Error(photosResult.error ?? "Your photos could not be saved. Please try again.")
+
+			router.push(`/listings/${managed!.id}`)
+			router.refresh()
+		} catch (error) {
+			setSubmitError(error instanceof Error ? error.message : "Your changes could not be saved. Please try again.")
+		} finally {
+			setIsSubmitting(false)
+		}
 	}
 
 	return (
@@ -240,17 +254,21 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 					/>
 				</Field>
 
-				<div className="flex w-full gap-2 mt-2">
+				{submitError && <FieldError>{submitError}</FieldError>}
+
+				<div className="mt-2 flex w-full gap-2">
 					<Button
 						type="submit"
+						disabled={isSubmitting}
 						className="flex-1 cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800"
 					>
-						Save changes
+						{isSubmitting ? "Uploading photos…" : "Save changes"}
 					</Button>
 
 					<Button
 						type="button"
 						variant="ghost"
+						disabled={isSubmitting}
 						onClick={() => router.push(`/listings/${managed!.id}`)}
 						className="border border-black flex-1 rounded-full text-black hover:bg-neutral-100 hover:text-neutral-900"
 					>
