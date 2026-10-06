@@ -19,6 +19,7 @@ const ListingCard = ({ listing, initialSaved }: ListingCardProps) => {
 			<div className="relative overflow-hidden rounded-2xl">
 				{cover ? (
 					<div className="relative h-[200px] w-full sm:h-[230px] md:h-[250px]">
+						{/* eslint-disable-next-line @next/next/no-img-element */}
 						<img
 							src={cover}
 							alt={title}

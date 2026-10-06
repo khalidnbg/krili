@@ -75,7 +75,7 @@ const Page = async () => {
 
 			{listings.length === 0 ? (
 				<section className="rounded-3xl border border-neutral-200/80 bg-white px-8 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
-					<p className="text-neutral-500">Your saved listings didn't come back — check back later.</p>
+					<p className="text-neutral-500">Your saved listings didn&apos;t come back — check back later.</p>
 				</section>
 			) : (
 				<section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

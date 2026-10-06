@@ -27,7 +27,10 @@ const PhotoUploader = ({ onChange, max = 5, maxSizeMB = 5 }: PhotoUploaderProps)
 	const [dragging, setDragging] = useState(false)
 	const inputRef = useRef<HTMLInputElement>(null)
 	const itemsRef = useRef<PhotoItem[]>([])
-	itemsRef.current = items
+
+	useEffect(() => {
+		itemsRef.current = items
+	}, [items])
 
 	// Revoke all object URLs on unmount to avoid memory leaks.
 	useEffect(() => {

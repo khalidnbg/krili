@@ -1,6 +1,5 @@
 "use client"
 
-import { cn } from "@/lib/utils"
 import { X, ChevronLeft, ChevronRight, Grid2x2 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -10,7 +9,6 @@ interface ListingPhotosGalleryProps {
 }
 
 const ListingPhotoGallery = ({ photos, title }: ListingPhotosGalleryProps) => {
-	if (!photos.length) return null
 
 	const initialActive = Math.max(0, photos.findIndex((photo) => photo.is_cover))
 	const [active, setActive] = useState(initialActive)
@@ -29,8 +27,8 @@ const ListingPhotoGallery = ({ photos, title }: ListingPhotosGalleryProps) => {
 
 		const onKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") setLightboxOpen(false)
-			if (e.key === "ArrowLeft") goPrev()
-			if (e.key === "ArrowRight") goNext()
+			if (e.key === "ArrowLeft") setActive((i) => (i === 0 ? photos.length - 1 : i - 1))
+			if (e.key === "ArrowRight") setActive((i) => (i === photos.length - 1 ? 0 : i + 1))
 		}
 
 		window.addEventListener("keydown", onKeyDown)
@@ -40,7 +38,9 @@ const ListingPhotoGallery = ({ photos, title }: ListingPhotosGalleryProps) => {
 			window.removeEventListener("keydown", onKeyDown)
 			document.body.style.overflow = ""
 		}
-	}, [lightboxOpen])
+	}, [lightboxOpen, photos.length])
+
+	if (!photos.length) return null
 
 	// grid shows cover + up to 4 more; extras beyond that are only reachable via lightbox
 	const gridPhotos = photos.slice(1, 5)

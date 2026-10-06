@@ -19,7 +19,11 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 	const isNewListingPage = pathname === "/listings/new"
 	const close = () => setOpen(false)
 
-	useEffect(() => setOpen(false), [pathname])
+	useEffect(() => {
+		const id = requestAnimationFrame(() => setOpen(false))
+		return () => cancelAnimationFrame(id)
+	}, [pathname])
+
 
 	useEffect(() => {
 		if (!open) return

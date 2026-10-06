@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import {
@@ -52,6 +52,7 @@ const ListingForm = () => {
 			availableFrom: ""
 		},
 	})
+	const hasCaution = useWatch({ control: form.control, name: "hasCaution" })
 
 	const onSubmit = async (values: z.infer<typeof listingSchema>) => {
 		const listing = await createListing(values, photos.files, photos.coverIndex)
@@ -204,7 +205,7 @@ const ListingForm = () => {
 					)}
 				/>
 
-				{form.watch("hasCaution") && (
+				{hasCaution && (
 					<Field data-invalid={!!form.formState.errors.cautionAmount}>
 						<FieldLabel htmlFor="cautionAmount" className="text-neutral-700">Caution amount (MAD)</FieldLabel>
 						<Input

@@ -99,7 +99,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 						My listings
 					</h1>
 					<p className="text-lg text-neutral-500">
-						{listings.length} listing{listings.length === 1 ? "" : "s"} — manage what you've posted.
+						{listings.length} listing{listings.length === 1 ? "" : "s"} — manage what you&apos;ve posted.
 					</p>
 				</div>
 				<Link
@@ -112,7 +112,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 			{listings.length === 0 ? (
 				<section className="flex flex-col items-center gap-4 rounded-3xl border border-neutral-200/80 bg-white px-8 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
-					<h2 className="text-2xl font-bold text-neutral-900">You haven't posted anything yet</h2>
+					<h2 className="text-2xl font-bold text-neutral-900">You haven&apos;t posted anything yet</h2>
 					<p className="text-neutral-500">
 						Create your first listing — it will appear here after a quick review.
 					</p>

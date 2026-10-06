@@ -15,6 +15,20 @@ type EmbeddedNeighborhood = {
 	name?: string
 }
 
+type ModerationRow = {
+	id: string
+	title: string
+	price_mad: number
+	rooms: number
+	property_type?: string | null
+	status: string
+	rejection_reason?: string | null
+	landlord_id: string
+	created_at: string
+	neighborhoods?: EmbeddedNeighborhood | EmbeddedNeighborhood[] | null
+	listing_photos?: { url: string; sort_order?: number | null; is_cover?: boolean | null }[] | null
+}
+
 export interface FetchListingsParams {
 	page?: number
 	pageSize?: number
@@ -299,7 +313,7 @@ export async function getModerationQueue(
 	}
 
 	return {
-		items: (data ?? []).map((row: any) => {
+		items: (data ?? []).map((row: ModerationRow) => {
 			const rawNeighborhood = row.neighborhoods as unknown as
 				| EmbeddedNeighborhood
 				| EmbeddedNeighborhood[]
@@ -319,8 +333,8 @@ export async function getModerationQueue(
 				landlordId: row.landlord_id,
 				createdAt: row.created_at,
 				photos: (row.listing_photos ?? [])
-					.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-					.map((photo: any) => ({
+					.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+					.map((photo) => ({
 						url: photo.url,
 						sort_order: photo.sort_order ?? 0,
 						is_cover: photo.is_cover ?? false,
@@ -467,11 +481,6 @@ export async function getManagedListing(id: string) {
 	// RLS already blocks other people; this double-check guards a published
 	// listing being edited by a non-owner.
 	if (!data || data.landlord_id !== userId) return null;
-
-	const rawNeighborhood = data.neighborhoods as unknown as
-		| { city?: string; name?: string }
-		| { city?: string; name?: string }[]
-		| null;
 
 	const profile = (await getLandlordProfiles([data.landlord_id]))[data.landlord_id]
 	return mapListingRow(data, profile)

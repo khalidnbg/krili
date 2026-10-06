@@ -43,9 +43,27 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 
 	// An already-revealed visitor sees the phone immediately (no second click).
 	useEffect(() => {
-		if (initialRevealed) void fetchContact()
+		if (!initialRevealed) return
+		let cancelled = false
+
+			; (async () => {
+				const result = await revealContact(listingId)
+				if (cancelled) return
+				if (!result.ok) {
+					if (result.reason === "auth") router.push("/sign-in")
+					else setError(result.message ?? "Something went wrong. Please try again.")
+					return
+				}
+				setPhone(result.phone)
+				setRevealed(true)
+			})()
+
+		return () => {
+			cancelled = true
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
+
 
 	const waLink = phone
 		? `https://wa.me/${phone}?text=${encodeURIComponent("Hello, I'm interested in your listing on Krili.")}`
