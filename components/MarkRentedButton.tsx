@@ -4,9 +4,11 @@ import { toggleRentedStatus } from "@/lib/actions/listing.action";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl";
 
 const MarkRentedButton = ({ listingId, status }: { listingId: string; status: ListingStatus }) => {
 	const router = useRouter()
+	const t = useTranslations("actions")
 	const [busy, setBusy] = useState(false)
 
 	const handleToggle = async () => {
@@ -26,7 +28,7 @@ const MarkRentedButton = ({ listingId, status }: { listingId: string; status: Li
 			disabled={busy}
 			onClick={handleToggle}
 		>
-			{busy ? "Updating…" : isRented ? "Mark as available" : "Mark as rented"}
+			{busy ? t("updating") : isRented ? t("markAsAvailable") : t("markAsRented")}
 		</Button>
 	)
 }

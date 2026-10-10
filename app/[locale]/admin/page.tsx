@@ -10,12 +10,19 @@ import Pagination from "@/components/Pagination"
 import { getUsers } from "@/lib/actions/admin-users.action"
 import UsersFilter from "@/components/admin/UsersFilter"
 import SuspendUserButton from "@/components/admin/SuspendUserButton"
+import { getTranslations } from "next-intl/server"
 
-const Page = async ({ searchParams }: SearchParams) => {
-	const params = await searchParams
+const Page = async ({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) => {
+	const t = await getTranslations("admin")
+	await params // Ensure params is awaited for Next.js 15
+	const searchParamsResolved = await searchParams
+	const str = (key: string) => {
+		const value = searchParamsResolved[key as keyof typeof searchParamsResolved]
+		return typeof value === "string" ? value : ""
+	}
 	const num = (key: string) => {
-		const value = params[key]
-		return typeof value === "string" ? Number(value) : undefined
+		const value = str(key)
+		return value ? Number(value) : undefined
 	}
 
 	const pageSize = 10
@@ -24,8 +31,8 @@ const Page = async ({ searchParams }: SearchParams) => {
 	const listingsPage = Math.max(1, num("listingsPage") ?? 1)
 	const reportsPage = Math.max(1, num("reportsPage") ?? 1)
 
-	const usersSearch = typeof params.usersSearch === "string" ? params.usersSearch : ""
-	const usersRole = typeof params.usersRole === "string" ? params.usersRole : ""
+	const usersSearch = str("usersSearch")
+	const usersRole = str("usersRole")
 
 	const queueResult = await getModerationQueue(listingsPage, pageSize)
 	const reportsResult = await getOpenReports(reportsPage, pageSize)
@@ -41,34 +48,36 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 	// Params preserved for the Users paginator (filters included, page keys excluded):
 	const usersParams: Record<string, string> = {}
-	for (const [key, value] of Object.entries(params)) {
+	for (const [key, value] of Object.entries(searchParamsResolved)) {
 		if (key === "usersPage" || key === "listingsPage" || key === "reportsPage") continue
 		if (typeof value === "string") usersParams[key] = value
 	}
 	// Params shared by both paginators, minus the two page keys:
 	const relistParams: Record<string, string> = {}
-	for (const [key, value] of Object.entries(params)) {
+	for (const [key, value] of Object.entries(searchParamsResolved)) {
 		if (key === "listingsPage" || key === "reportsPage") continue
 		if (typeof value === "string") relistParams[key] = value
 	}
 
-	const reasonLabel = (reason: ReportReason) =>
-		reportReasons.find((item) => item.value === reason)?.label ?? reason
+	const reasonLabel = (reason: ReportReason) => {
+		const labelKey = reportReasons.find((item) => item.value === reason)?.labelKey
+		return labelKey ? t(labelKey) : reason
+	}
 
 	return (
 		<main>
 			<section className="flex flex-col gap-2">
-				<h1>Moderation queue</h1>
+				<h1>{t("moderationQueue")}</h1>
 				<p className="text-lg text-muted-foreground">
-					{queue.length} listing{queue.length === 1 ? "" : "s"} waiting for review.
+					{t("moderationSubtitle", { count: queue.length })}
 				</p>
 			</section>
 
 			{queue.length === 0 ? (
 				<section className="flex flex-col items-center gap-4 rounded-4xl border border-black px-8 py-12 text-center">
-					<h2 className="text-2xl font-bold">All caught up</h2>
-					<p className="text-muted-foreground">No listings are waiting for review.</p>
-					<Link href="/" className="btn-primary w-fit">Back to site</Link>
+					<h2 className="text-2xl font-bold">{t("allCaughtUp")}</h2>
+					<p className="text-muted-foreground">{t("noListingsToReview")}</p>
+					<Link href="/" className="btn-primary w-fit">{t("backToSite")}</Link>
 				</section>
 			) : (
 				<section className="flex w-full flex-col gap-6">
@@ -96,9 +105,9 @@ const Page = async ({ searchParams }: SearchParams) => {
 											<h2 className="text-xl font-bold">{listing.title}</h2>
 											<div className="property-badge">{listing.type}</div>
 											{listing.status === "rejected" ? (
-												<span className="rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">Rejected</span>
+												<span className="rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{t("rejected")}</span>
 											) : (
-												<span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">Pending</span>
+												<span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">{t("pending")}</span>
 											)}
 										</div>
 										<p className="text-sm text-muted-foreground">
@@ -111,7 +120,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 											Landlord {listing.landlordId} · created {new Date(listing.createdAt).toLocaleString("en-GB")}
 										</p>
 										{listing.status === "rejected" && listing.rejectionReason && (
-											<p className="text-sm text-destructive">Reason: {listing.rejectionReason}</p>
+											<p className="text-sm text-destructive">{t("reason")}: {listing.rejectionReason}</p>
 										)}
 									</div>
 
@@ -135,7 +144,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 			<section className="flex flex-col gap-2">
 				<h2 className="text-2xl font-bold">
-					Reports
+					{t("reports")}
 					<span className="ml-2 rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
 						{reports.length}
 					</span>
@@ -144,7 +153,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 			{reports.length === 0 ? (
 				<section className="rounded-4xl border border-black px-8 py-10 text-center">
-					<p className="text-muted-foreground">No open reports.</p>
+					<p className="text-muted-foreground">{t("noReports")}</p>
 				</section>
 			) : (
 				<section className="flex w-full flex-col gap-4">
@@ -187,58 +196,59 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 			<section className="flex flex-col gap-3">
 				<div className="flex flex-wrap items-center justify-between gap-3">
-					<h2 className="text-2xl font-bold">Users</h2>
+					<h2 className="text-2xl font-bold">{t("users")}</h2>
 					<UsersFilter search={usersSearch} role={usersRole} />
 				</div>
 
 				{users.length === 0 ? (
-					<p className="text-muted-foreground">No users found.</p>
-				) : (<div className="overflow-x-auto rounded-4xl border border-black">
-					<table className="w-full text-sm">
-						<thead>
-							<tr className="border-b border-black text-left">
-								<th className="p-3">Name</th>
-								<th className="p-3">Email</th>
-								<th className="p-3">Phone</th>
-								<th className="p-3">Role</th>
-								<th className="p-3">Verified</th>
-								<th className="p-3">Listings</th>
-								<th className="p-3">Joined</th>
-								<th className="p-3">Actions</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							{users.map((user) => (
-								<tr key={user.id} className="border-b border-border last:border-0">
-									<td className="p-3 font-semibold">
-										{user.firstName || user.lastName
-											? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
-											: user.id.slice(0, 8)}
-										{user.suspended && (
-											<span className="ml-2 rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
-												Suspended
-											</span>
-										)}
-									</td>
-									<td className="p-3">{user.email ?? "—"}</td>
-									<td className="p-3">{user.phone ?? "—"}</td>
-									<td className="p-3 capitalize">{user.role}</td>
-									<td className="p-3">
-										<span className={user.phoneVerified ? "text-green-700" : "opacity-40"}>P</span>
-										{" / "}
-										<span className={user.idVerified ? "text-green-700" : "opacity-40"}>ID</span>
-									</td>
-									<td className="p-3">{user.listingCount}</td>
-									<td className="p-3">{new Date(user.createdAt).toLocaleDateString("en-GB")}</td>
-									<td className="p-3">
-										<SuspendUserButton userId={user.id} suspended={user.suspended} />
-									</td>
+					<p className="text-muted-foreground">{t("noUsers")}</p>
+				) : (
+					<div className="overflow-x-auto rounded-4xl border border-black">
+						<table className="w-full text-sm">
+							<thead>
+								<tr className="border-b border-black text-left">
+									<th className="p-3">{t("name")}</th>
+									<th className="p-3">{t("email")}</th>
+									<th className="p-3">{t("phone")}</th>
+									<th className="p-3">{t("role")}</th>
+									<th className="p-3">{t("verified")}</th>
+									<th className="p-3">{t("listingsCount")}</th>
+									<th className="p-3">{t("joined")}</th>
+									<th className="p-3">{t("actions")}</th>
 								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+							</thead>
+
+							<tbody>
+								{users.map((user) => (
+									<tr key={user.id} className="border-b border-border last:border-0">
+										<td className="p-3 font-semibold">
+											{user.firstName || user.lastName
+												? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+												: user.id.slice(0, 8)}
+											{user.suspended && (
+												<span className="ml-2 rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
+													{t("suspended")}
+												</span>
+											)}
+										</td>
+										<td className="p-3">{user.email ?? "—"}</td>
+										<td className="p-3">{user.phone ?? "—"}</td>
+										<td className="p-3 capitalize">{user.role}</td>
+										<td className="p-3">
+											<span className={user.phoneVerified ? "text-green-700" : "opacity-40"}>P</span>
+											{" / "}
+											<span className={user.idVerified ? "text-green-700" : "opacity-40"}>ID</span>
+										</td>
+										<td className="p-3">{user.listingCount}</td>
+										<td className="p-3">{new Date(user.createdAt).toLocaleDateString("en-GB")}</td>
+										<td className="p-3">
+											<SuspendUserButton userId={user.id} suspended={user.suspended} />
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				)}
 
 				<Pagination

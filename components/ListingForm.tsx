@@ -27,11 +27,13 @@ import { listingSchema } from "@/lib/schema"
 import PhotoUploader, { PhotoUploaderState } from "./PhotoUploader"
 import { useState } from "react"
 import { Textarea } from "./ui/textarea"
+import { useTranslations } from "next-intl"
 
 const inputClass = "rounded-xl border-neutral-200"
 
 const ListingForm = () => {
 	const router = useRouter()
+	const t = useTranslations("listingForm")
 	const [photos, setPhotos] = useState<PhotoUploaderState>({ files: [], coverIndex: 0 })
 	const [submitError, setSubmitError] = useState<string | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -66,12 +68,12 @@ const ListingForm = () => {
 			const listing = await createListing(values, photoUrls, photos.coverIndex)
 
 			if (!listing || !("id" in listing)) {
-				throw new Error("Your listing could not be published. Please try again.")
+				throw new Error(t("error"))
 			}
 
 			router.push(`/listings/${listing.id}`)
 		} catch (error) {
-			setSubmitError(error instanceof Error ? error.message : "Your listing could not be published. Please try again.")
+			setSubmitError(error instanceof Error ? error.message : t("error"))
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -81,10 +83,10 @@ const ListingForm = () => {
 		<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6 rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)] md:p-8">
 			<FieldGroup>
 				<Field data-invalid={!!form.formState.errors.title}>
-					<FieldLabel htmlFor="title" className="text-neutral-700">Listing title</FieldLabel>
+					<FieldLabel htmlFor="title" className="text-neutral-700">{t("title")}</FieldLabel>
 					<Input
 						id="title"
-						placeholder="Ex. Bright studio in Maârif"
+						placeholder={t("titlePlaceholder")}
 						aria-invalid={!!form.formState.errors.title}
 						className={inputClass}
 						{...form.register("title")}
@@ -99,14 +101,14 @@ const ListingForm = () => {
 					name="type"
 					render={({ field }) => (
 						<Field data-invalid={!!form.formState.errors.type}>
-							<FieldLabel htmlFor="type" className="text-neutral-700">Property type</FieldLabel>
+							<FieldLabel htmlFor="type" className="text-neutral-700">{t("propertyType")}</FieldLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
 								<SelectTrigger
 									id="type"
 									className={`w-full capitalize ${inputClass}`}
 									aria-invalid={!!form.formState.errors.type}
 								>
-									<SelectValue placeholder="Select the type" />
+									<SelectValue placeholder={t("typePlaceholder")} />
 								</SelectTrigger>
 								<SelectContent>
 									{propertyTypes.map((type) => (
@@ -124,12 +126,12 @@ const ListingForm = () => {
 				/>
 
 				<Field data-invalid={!!form.formState.errors.rooms}>
-					<FieldLabel htmlFor="rooms" className="text-neutral-700">Rooms</FieldLabel>
+					<FieldLabel htmlFor="rooms" className="text-neutral-700">{t("rooms")}</FieldLabel>
 					<Input
 						id="rooms"
 						type="number"
 						min={1}
-						placeholder="2"
+						placeholder={t("roomsPlaceholder")}
 						aria-invalid={!!form.formState.errors.rooms}
 						className={inputClass}
 						{...form.register("rooms")}
@@ -140,27 +142,27 @@ const ListingForm = () => {
 				</Field>
 
 				<Field data-invalid={!!form.formState.errors.price}>
-					<FieldLabel htmlFor="price" className="text-neutral-700">Rent per month (MAD)</FieldLabel>
+					<FieldLabel htmlFor="price" className="text-neutral-700">{t("price")}</FieldLabel>
 					<Input
 						id="price"
 						type="number"
 						min={1}
-						placeholder="2500"
+						placeholder={t("pricePlaceholder")}
 						aria-invalid={!!form.formState.errors.price}
 						className={inputClass}
 						{...form.register("price")}
 					/>
-					<FieldDescription className="text-neutral-400">Monthly rent in Moroccan Dirham.</FieldDescription>
+					<FieldDescription className="text-neutral-400">{t("priceDescription")}</FieldDescription>
 					{form.formState.errors.price && (
 						<FieldError>{form.formState.errors.price.message}</FieldError>
 					)}
 				</Field>
 
 				<Field data-invalid={!!form.formState.errors.neighborhood}>
-					<FieldLabel htmlFor="neighborhood" className="text-neutral-700">Neighborhood</FieldLabel>
+					<FieldLabel htmlFor="neighborhood" className="text-neutral-700">{t("neighborhood")}</FieldLabel>
 					<Input
 						id="neighborhood"
-						placeholder="Ex. Maârif"
+						placeholder={t("neighborhoodPlaceholder")}
 						aria-invalid={!!form.formState.errors.neighborhood}
 						className={inputClass}
 						{...form.register("neighborhood")}
@@ -175,14 +177,14 @@ const ListingForm = () => {
 					name="city"
 					render={({ field }) => (
 						<Field data-invalid={!!form.formState.errors.city}>
-							<FieldLabel htmlFor="city" className="text-neutral-700">City</FieldLabel>
+							<FieldLabel htmlFor="city" className="text-neutral-700">{t("city")}</FieldLabel>
 							<Select value={field.value} onValueChange={field.onChange}>
 								<SelectTrigger
 									id="city"
 									className={`w-full capitalize ${inputClass}`}
 									aria-invalid={!!form.formState.errors.city}
 								>
-									<SelectValue placeholder="Select the city" />
+									<SelectValue placeholder={t("cityPlaceholder")} />
 								</SelectTrigger>
 								<SelectContent>
 									{cities.map((city) => (
@@ -211,7 +213,7 @@ const ListingForm = () => {
 									onChange={(e) => field.onChange(e.target.checked)}
 									className="size-4 accent-[#FE5933]"
 								/>
-								Security deposit (caution)
+								{t("hasCaution")}
 							</FieldLabel>
 						</Field>
 					)}
@@ -219,12 +221,12 @@ const ListingForm = () => {
 
 				{hasCaution && (
 					<Field data-invalid={!!form.formState.errors.cautionAmount}>
-						<FieldLabel htmlFor="cautionAmount" className="text-neutral-700">Caution amount (MAD)</FieldLabel>
+						<FieldLabel htmlFor="cautionAmount" className="text-neutral-700">{t("cautionAmount")}</FieldLabel>
 						<Input
 							id="cautionAmount"
 							type="number"
 							min={0}
-							placeholder="3000"
+							placeholder={t("cautionPlaceholder")}
 							aria-invalid={!!form.formState.errors.cautionAmount}
 							className={inputClass}
 							{...form.register("cautionAmount")}
@@ -236,11 +238,11 @@ const ListingForm = () => {
 				)}
 
 				<Field data-invalid={!!form.formState.errors.description}>
-					<FieldLabel htmlFor="description" className="text-neutral-700">Description</FieldLabel>
+					<FieldLabel htmlFor="description" className="text-neutral-700">{t("description")}</FieldLabel>
 					<Textarea
 						id="description"
 						rows={4}
-						placeholder="Describe the property, features, and who it's ideal for…"
+						placeholder={t("descriptionPlaceholder")}
 						aria-invalid={!!form.formState.errors.description}
 						className={inputClass}
 						{...form.register("description")}
@@ -252,12 +254,12 @@ const ListingForm = () => {
 
 				<div className="grid grid-cols-2 gap-4">
 					<Field data-invalid={!!form.formState.errors.beds}>
-						<FieldLabel htmlFor="beds" className="text-neutral-700">Beds</FieldLabel>
+						<FieldLabel htmlFor="beds" className="text-neutral-700">{t("beds")}</FieldLabel>
 						<Input id="beds" type="number" min={1} aria-invalid={!!form.formState.errors.beds}
 							className={inputClass} {...form.register("beds")} />
 					</Field>
 					<Field data-invalid={!!form.formState.errors.bathrooms}>
-						<FieldLabel htmlFor="bathrooms" className="text-neutral-700">Bathrooms</FieldLabel>
+						<FieldLabel htmlFor="bathrooms" className="text-neutral-700">{t("bathrooms")}</FieldLabel>
 						<Input id="bathrooms" type="number" min={1} aria-invalid={!!form.formState.errors.bathrooms}
 							className={inputClass} {...form.register("bathrooms")} />
 					</Field>
@@ -266,24 +268,24 @@ const ListingForm = () => {
 				<Field>
 					<FieldLabel className="flex cursor-pointer items-center gap-2 text-neutral-700">
 						<input type="checkbox" {...form.register("furnished")} className="size-4 accent-[#FE5933]" />
-						Furnished
+						{t("furnished")}
 					</FieldLabel>
 					<FieldLabel className="flex cursor-pointer items-center gap-2 text-neutral-700">
 						<input type="checkbox" {...form.register("petFriendly")} className="size-4 accent-[#FE5933]" />
-						Pet friendly
+						{t("petFriendly")}
 					</FieldLabel>
 				</Field>
 
 				<Field>
-					<FieldLabel htmlFor="availableFrom" className="text-neutral-700">Available from</FieldLabel>
+					<FieldLabel htmlFor="availableFrom" className="text-neutral-700">{t("availableFrom")}</FieldLabel>
 					<Input id="availableFrom" type="date" className={inputClass} {...form.register("availableFrom")} />
 				</Field>
 
 				<Field>
-					<FieldLabel className="text-neutral-700">Photos</FieldLabel>
+					<FieldLabel className="text-neutral-700">{t("photos")}</FieldLabel>
 					<PhotoUploader onChange={setPhotos} max={5} maxSizeMB={5} />
 					<FieldDescription className="text-neutral-400">
-						Add up to 5 photos — the first one is used as the cover on cards.
+						{t("photosDescription")}
 					</FieldDescription>
 				</Field>
 
@@ -294,7 +296,7 @@ const ListingForm = () => {
 					disabled={isSubmitting}
 					className="w-full cursor-pointer rounded-full bg-neutral-900 hover:bg-neutral-800"
 				>
-					{isSubmitting ? "Uploading photos…" : "Publish listing"}
+					{isSubmitting ? t("uploadingPhotos") : t("publishListing")}
 				</Button>
 			</FieldGroup>
 		</form>

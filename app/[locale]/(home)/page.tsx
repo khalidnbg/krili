@@ -2,8 +2,10 @@ import ListingCard from "@/components/ListingCard"
 import ListingsList from "@/components/ListingsList"
 import { getSavedListingIds } from "@/lib/actions/bookmarks.action"
 import { fetchListings } from "@/lib/actions/listing.action"
+import { getTranslations } from "next-intl/server"
 
 const page = async () => {
+	const t = await getTranslations("home")
 	const savedIds = new Set(await getSavedListingIds())
 
 	const result = await fetchListings({ pageSize: 6 })
@@ -14,10 +16,10 @@ const page = async () => {
 		<main className="flex flex-col gap-16 px-4 py-10 md:px-8 md:py-14">
 			<section className="flex flex-col gap-3">
 				<h1 className="text-4xl font-bold tracking-tight text-neutral-900 md:text-5xl">
-					Find your next home
+					{t("title")}
 				</h1>
 				<p className="max-w-xl text-lg text-neutral-500">
-					Houses, studios & rooms for rent across Morocco — posted by verified landlords
+					{t("subtitle")}
 				</p>
 			</section>
 
@@ -28,7 +30,7 @@ const page = async () => {
 			</section>
 
 			<section className="flex flex-col gap-6">
-				<ListingsList title="Latest Listings" listings={listings} classNames="w-full max-lg:w-full" />
+				<ListingsList title={t("latestListings")} listings={listings} classNames="w-full max-lg:w-full" />
 				{/* <CTA /> */}
 			</section>
 		</main>

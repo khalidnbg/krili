@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { usePathname } from "next/navigation"
 import { Bookmark, Compass, LayoutDashboard, Menu, Plus, Shield, X } from "lucide-react"
 import { SignInButton, Show, UserButton, SignUpButton } from "@clerk/nextjs"
 import { cn } from "@/lib/utils"
+import { useTranslations, useLocale } from "next-intl"
+import { usePathname, useRouter } from "@/i18n/routing"
 
 interface NavbarProps {
 	isAdmin?: boolean
@@ -14,10 +15,17 @@ interface NavbarProps {
 
 const Navbar = ({ isAdmin = false }: NavbarProps) => {
 	const pathname = usePathname()
+	const router = useRouter()
+	const locale = useLocale()
+	const t = useTranslations("nav")
 	const [open, setOpen] = useState(false)
 
-	const isNewListingPage = pathname === "/listings/new"
+	const isNewListingPage = pathname === `/${locale}/listings/new`
 	const close = () => setOpen(false)
+
+	const switchLocale = (newLocale: string) => {
+		router.replace(pathname, { locale: newLocale })
+	}
 
 	useEffect(() => {
 		const id = requestAnimationFrame(() => setOpen(false))
@@ -36,10 +44,10 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 
 	const navLink = (href: string, label: string, Icon: typeof Compass) => (
 		<Link
-			href={href}
+			href={`/${locale}${href}`}
 			className={cn(
 				"flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-				pathname === href
+				pathname === `/${locale}${href}`
 					? "bg-[#FE5933] text-white"
 					: "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
 			)}
@@ -52,28 +60,35 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 	return (
 		<header className="sticky top-4 z-50 mx-4 md:mx-8">
 			<nav className="flex items-center justify-between gap-4 rounded-full border border-neutral-200/80 bg-white/90 px-4 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(0,0,0,0.08)] backdrop-blur-md">
-				<Link href="/" className="relative z-[70] shrink-0">
+				<Link href={`/${locale}`} className="relative z-[70] shrink-0">
 					<Image src="/logo.png" alt="logo" width={40} height={38} className="h-9 w-auto" />
 				</Link>
 
 				{/* Desktop */}
 				<div className="hidden items-center gap-1 md:flex">
-					{navLink("/listings", "Browse", Compass)}
+					{navLink("/listings", t("browse"), Compass)}
 					<Show when="signed-in">
-						{navLink("/dashboard", "My listings", LayoutDashboard)}
-						{navLink("/bookmarks", "Saved", Bookmark)}
-						{isAdmin && navLink("/admin", "Admin", Shield)}
+						{navLink("/dashboard", t("myListings"), LayoutDashboard)}
+						{navLink("/bookmarks", t("saved"), Bookmark)}
+						{isAdmin && navLink("/admin", t("admin"), Shield)}
 					</Show>
 				</div>
 
 				<div className="hidden items-center gap-3 md:flex">
+					{/* Locale switcher */}
+					<button
+						onClick={() => switchLocale(locale === "fr" ? "ar" : "fr")}
+						className="rounded-full px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
+					>
+						{locale === "fr" ? "AR" : "FR"}
+					</button>
 					<Show when="signed-in">
 						{!isNewListingPage && (
 							<Link
-								href="/listings/new"
+								href={`/${locale}/listings/new`}
 								className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
 							>
-								List a property
+								{t("browse")}
 							</Link>
 						)}
 						<UserButton />
@@ -81,12 +96,12 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 					<Show when="signed-out">
 						<SignInButton>
 							<button className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100">
-								Sign In
+								{t("signIn")}
 							</button>
 						</SignInButton>
 						<SignUpButton>
 							<button className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800">
-								Sign Up
+								{t("signUp")}
 							</button>
 						</SignUpButton>
 					</Show>
@@ -118,57 +133,64 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 					/>
 
 					<div className="relative z-50 mt-2 flex flex-col gap-1 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white p-3 shadow-xl md:hidden animate-in fade-in-0 slide-in-from-top-2">
+						{/* Locale switcher */}
+						<button
+							onClick={() => switchLocale(locale === "fr" ? "ar" : "fr")}
+							className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+						>
+							{locale === "fr" ? "العربية" : "Français"}
+						</button>
 						<Link
-							href="/listings"
+							href={`/${locale}/listings`}
 							onClick={close}
 							className={cn(
 								"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-								pathname === "/listings" ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
+								pathname === `/${locale}/listings` ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
 							)}
 						>
-							<Compass className="size-4" /> Browse
+							<Compass className="size-4" /> {t("browse")}
 						</Link>
 
 						<Show when="signed-in">
 							<Link
-								href="/dashboard"
+								href={`/${locale}/dashboard`}
 								onClick={close}
 								className={cn(
 									"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-									pathname === "/dashboard" ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
+									pathname === `/${locale}/dashboard` ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
 								)}
 							>
-								<LayoutDashboard className="size-4" /> My listings
+								<LayoutDashboard className="size-4" /> {t("myListings")}
 							</Link>
 							<Link
-								href="/bookmarks"
+								href={`/${locale}/bookmarks`}
 								onClick={close}
 								className={cn(
 									"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-									pathname === "/bookmarks" ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
+									pathname === `/${locale}/bookmarks` ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
 								)}
 							>
-								<Bookmark className="size-4" /> Saved
+								<Bookmark className="size-4" /> {t("saved")}
 							</Link>
 							{isAdmin && (
 								<Link
-									href="/admin"
+									href={`/${locale}/admin`}
 									onClick={close}
 									className={cn(
 										"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-										pathname.startsWith("/admin") ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
+										pathname.startsWith(`/${locale}/admin`) ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
 									)}
 								>
-									<Shield className="size-4" /> Admin
+									<Shield className="size-4" /> {t("admin")}
 								</Link>
 							)}
 							{!isNewListingPage && (
 								<Link
-									href="/listings/new"
+									href={`/${locale}/listings/new`}
 									onClick={close}
 									className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
 								>
-									<Plus className="size-4" /> List a property
+									<Plus className="size-4" /> {t("browse")}
 								</Link>
 							)}
 						</Show>
@@ -177,12 +199,12 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 							<div className="mt-1 flex flex-col gap-2 border-t border-neutral-200 pt-3">
 								<SignUpButton>
 									<button className="w-full justify-center rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white">
-										Sign Up
+										{t("signUp")}
 									</button>
 								</SignUpButton>
 								<SignInButton>
 									<button className="w-full justify-center rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-medium text-neutral-900">
-										Sign In
+										{t("signIn")}
 									</button>
 								</SignInButton>
 							</div>

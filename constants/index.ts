@@ -1,5 +1,12 @@
 export const propertyTypes = ["house", "studio", "room", "apartment"] as const
 
+export const propertyTypeKeys: Record<PropertyType, string> = {
+	house: "propertyType.house",
+	studio: "propertyType.studio",
+	room: "propertyType.room",
+	apartment: "propertyType.apartment",
+}
+
 export const propertyColors: Record<PropertyType, string> = {
 	house: "#C8FFDF",
 	studio: "#FFA6E",
@@ -8,32 +15,57 @@ export const propertyColors: Record<PropertyType, string> = {
 }
 
 export const cities = [
-	"Casablanca",
-	"Rbat",
-	"Marrakech",
-	"Fez",
-	"Tangier",
-	"Aadir",
-]
+	"casablanca",
+	"rbat",
+	"marrakech",
+	"fez",
+	"tangier",
+	"aadir",
+] as const
+
+export const cityKeys: Record<(typeof cities)[number], string> = {
+	casablanca: "city.casablanca",
+	rbat: "city.rbat",
+	marrakech: "city.marrakech",
+	fez: "city.fez",
+	tangier: "city.tangier",
+	aadir: "city.aadir",
+}
 
 export const neighborhoods = [
-	"Maârif", "Gauther",
-	"Anfa",
-	"Aïn Diâb",
-	"Adal",
-	"Hassan",
-	"Guéliz",
-	"Médina",
-	"Ville Nouvelle",
-	"Founty",
-	"Centre Ville",
-	"Corniche",
-]
+	"maarif",
+	"gauthier",
+	"anfa",
+	"ainDiab",
+	"agdal",
+	"hassan",
+	"geliz",
+	"medina",
+	"villeNouvelle",
+	"founty",
+	"centreVille",
+	"corniche",
+] as const
+
+export const neighborhoodKeys: Record<(typeof neighborhoods)[number], string> = {
+	maarif: "neighborhood.maarif",
+	gauthier: "neighborhood.gauthier",
+	anfa: "neighborhood.anfa",
+	ainDiab: "neighborhood.ainDiab",
+	agdal: "neighborhood.agdal",
+	hassan: "neighborhood.hassan",
+	geliz: "neighborhood.geliz",
+	medina: "neighborhood.medina",
+	villeNouvelle: "neighborhood.villeNouvelle",
+	founty: "neighborhood.founty",
+	centreVille: "neighborhood.centreVille",
+	corniche: "neighborhood.corniche",
+}
 
 // export const featuredListings: Listing[] = [
 // 	{
 // 		id: "f1",
-// 		title: "Bright Studio in Maârif",
+// 		title: "Bright Studio in Maarif",
 // 		type: "studio",
 // 		price: 3200,
 // 		rooms: 1,
@@ -213,9 +245,9 @@ export const neighborhoods = [
 // export const allListings = [...featuredListings, ...recentListings]
 
 export const reportReasons = [
-	{ value: "scam", label: "Scam or fraudulent listing" },
-	{ value: "fake_photos", label: "Fake or misleading photos" },
-	{ value: "already_rented", label: "Already rented" },
-	{ value: "offensive", label: "Offensive content" },
-	{ value: "other", label: "Other" },
+	{ value: "scam", labelKey: "reports.reasonScam" },
+	{ value: "fake_photos", labelKey: "reports.reasonFakePhotos" },
+	{ value: "already_rented", labelKey: "reports.reasonAlreadyRented" },
+	{ value: "offensive", labelKey: "reports.reasonOffensive" },
+	{ value: "other", labelKey: "reports.reasonOther" },
 ] as const

@@ -1,6 +1,9 @@
+"use client"
+
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
 interface PaginationProps {
 	currentPage: number
@@ -13,6 +16,7 @@ interface PaginationProps {
 }
 
 const Pagination = ({ currentPage, totalPages, basePath, searchParams = {}, pageParam = "page" }: PaginationProps) => {
+	const t = useTranslations("pagination")
 	if (totalPages <= 1) return null
 
 	const buildHref = (page: number) => {
@@ -35,7 +39,7 @@ const Pagination = ({ currentPage, totalPages, basePath, searchParams = {}, page
 				href={buildHref(currentPage - 1)}
 				className={cn("btn-signin px-3 py-1.5", currentPage <= 1 && "pointer-events-none opacity-40")}
 			>
-				<ChevronLeft className="size-4" /> Prev
+				<ChevronLeft className="size-4" /> {t("previous")}
 			</Link>
 
 			{pages.map((page) => (
@@ -56,7 +60,7 @@ const Pagination = ({ currentPage, totalPages, basePath, searchParams = {}, page
 				href={buildHref(currentPage + 1)}
 				className={cn("btn-signin px-3 py-1.5", currentPage >= totalPages && "pointer-events-none opacity-40")}
 			>
-				Next <ChevronRight className="size-4" />
+				{t("next")} <ChevronRight className="size-4" />
 			</Link>
 		</nav>
 	)

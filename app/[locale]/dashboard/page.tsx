@@ -9,6 +9,7 @@ import { cn, getCoverPhotoUrl, getPropertyColor } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 type EmbeddedNeighborhood = { city?: string; name?: string }
 
@@ -75,19 +76,30 @@ const fetchMyListings = async (
 	return { listings, total: count ?? data?.length ?? 0 }
 }
 
-const Page = async ({ searchParams }: SearchParams) => {
-	const params = await searchParams
-	const page = Math.max(1, Number(typeof params.page === "string" ? params.page : "1") || 1)
+const Page = async ({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) => {
+	const { locale } = await params
+	const searchParamsResolved = await searchParams
+	const t = await getTranslations("dashboard")
+	const str = (key: string) => {
+		const value = searchParamsResolved[key as keyof typeof searchParamsResolved]
+		return typeof value === "string" ? value : ""
+	}
+	const page = Math.max(1, Number(str("page")) || 1)
 	const pageSize = 10
 	const from = (page - 1) * pageSize
 	const to = page * pageSize - 1
 
 	const { userId } = await auth()
-	if (!userId) redirect("/sign-in")
+	if (!userId) redirect(`/${locale}/sign-in`)
 
 	const result = await fetchMyListings(userId, from, to)
 	const listings = result.listings
 	const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
+
+		const searchParamsRecord: Record<string, string | string[] | undefined> = {}
+		for (const [key, value] of Object.entries(searchParamsResolved)) {
+			searchParamsRecord[key] = value
+		}
 
 	const revealCounts = await getContactRevealCounts(listings.map((listing) => listing.id))
 
@@ -96,31 +108,31 @@ const Page = async ({ searchParams }: SearchParams) => {
 			<section className="flex flex-wrap items-center justify-between gap-4">
 				<div className="flex flex-col gap-2">
 					<h1 className="text-4xl font-bold tracking-tight text-neutral-900 md:text-5xl">
-						My listings
+						{t("title")}
 					</h1>
 					<p className="text-lg text-neutral-500">
-						{listings.length} listing{listings.length === 1 ? "" : "s"} — manage what you&apos;ve posted.
+						{t("subtitle", { count: listings.length })}
 					</p>
 				</div>
 				<Link
-					href="/listings/new"
+					href={`/${locale}/listings/new`}
 					className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
 				>
-					+ New listing
+					{t("newListing")}
 				</Link>
 			</section>
 
 			{listings.length === 0 ? (
 				<section className="flex flex-col items-center gap-4 rounded-3xl border border-neutral-200/80 bg-white px-8 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
-					<h2 className="text-2xl font-bold text-neutral-900">You haven&apos;t posted anything yet</h2>
+					<h2 className="text-2xl font-bold text-neutral-900">{t("emptyState.title")}</h2>
 					<p className="text-neutral-500">
-						Create your first listing — it will appear here after a quick review.
+						{t("emptyState.subtitle")}
 					</p>
 					<Link
-						href="/listings/new"
+						href={`/${locale}/listings/new`}
 						className="w-fit rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
 					>
-						Post your first listing
+						{t("emptyState.cta")}
 					</Link>
 				</section>
 			) : (
@@ -159,14 +171,14 @@ const Page = async ({ searchParams }: SearchParams) => {
 											</div>
 										</div>
 										<p className="text-sm text-neutral-500">
-											{listing.neighborhood} · {listing.city} — {listing.rooms} room{listing.rooms > 1 ? "s" : ""}
+											{listing.neighborhood} · {listing.city} — {t("room", { count: listing.rooms })}
 										</p>
 										<p className="text-lg font-bold text-neutral-900">
 											{listing.price.toLocaleString()}{" "}
-											<span className="text-sm font-normal text-neutral-500">MAD/month</span>
+											<span className="text-sm font-normal text-neutral-500">{t("perMonth")}</span>
 										</p>
 										<p className="text-xs text-neutral-400">
-											Posted {new Date(listing.createdAt).toLocaleDateString("en-GB")}
+											{t("postedOn", { date: new Date(listing.createdAt).toLocaleDateString(locale === "ar" ? "ar-MA" : "fr-MA") })}
 										</p>
 									</Link>
 
@@ -178,23 +190,23 @@ const Page = async ({ searchParams }: SearchParams) => {
 												statusStyles[listing.status]
 											)}
 										>
-											{listing.status}
+											{t(`status.${listing.status}`)}
 										</span>
 
 										{(() => {
 											const count = revealCounts[listing.id] ?? 0
 											return count > 0 ? (
 												<p className="text-xs text-neutral-500">
-													{count} tenant{count === 1 ? "" : "s"} asked for your contact
+													{t("contactRequests", { count })}
 												</p>
 											) : (
-												<p className="text-xs text-neutral-400">No contact requests yet</p>
+												<p className="text-xs text-neutral-400">{t("noContactRequests")}</p>
 											)
 										})()}
 
 										{listing.status === "rejected" && listing.rejectionReason && (
 											<p className="max-w-xs text-sm text-red-600">
-												Reason: {listing.rejectionReason}
+												{t("reason")}: {listing.rejectionReason}
 											</p>
 										)}
 
@@ -205,12 +217,12 @@ const Page = async ({ searchParams }: SearchParams) => {
 
 											<Link href={`/listings/${listing.id}/edit`}>
 												<Button type="button" className="rounded-full bg-neutral-900 hover:bg-neutral-800">
-													Edit
+													{t("edit")}
 												</Button>
 											</Link>
 											<Link href={`/listings/${listing.id}/edit`}>
 												<Button type="button" variant="outline" className="rounded-full border-neutral-200">
-													Photos
+													{t("photos")}
 												</Button>
 											</Link>
 											<DeleteListingButton listingId={listing.id} />
@@ -223,7 +235,7 @@ const Page = async ({ searchParams }: SearchParams) => {
 				</section>
 			)}
 
-			<Pagination currentPage={page} totalPages={totalPages} basePath="/dashboard" searchParams={params} />
+			<Pagination currentPage={page} totalPages={totalPages} basePath={`/${locale}/dashboard`} searchParams={searchParamsRecord} />
 		</main>
 	)
 }

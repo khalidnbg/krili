@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import "../globals.css";
 import { Bricolage_Grotesque, Geist } from "next/font/google";
-import "./globals.css";
-import { cn } from "@/lib/utils";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { ensureProfile } from "@/lib/actions/profile";
@@ -14,27 +16,39 @@ const bricolage = Bricolage_Grotesque({
 	subsets: ["latin"],
 });
 
+const locales = ["fr", "ar"];
+
 export const metadata: Metadata = {
 	title: "Krili — Houses, Studios & Rooms for Rent",
 	description: "Find and post house, studio and room rental listings across Morocco.",
 };
 
-export default async function RootLayout({
+export default async function LocaleLayout({
 	children,
+	params,
 }: Readonly<{
 	children: React.ReactNode;
+	params: Promise<{ locale: string }>;
 }>) {
+	const { locale } = await params;
 
-	await ensureProfile()
+	if (!locales.includes(locale)) {
+		notFound();
+	}
 
-	const admin = await isAdmin()
+	const messages = await getMessages();
+
+	await ensureProfile();
+	const admin = await isAdmin();
 
 	return (
-		<html lang="en" className={cn("font-sans", geist.variable)}>
+		<html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={`font-sans ${geist.variable}`}>
 			<body className={`${bricolage.variable} antialiased`}>
 				<ClerkProvider appearance={{ variables: { colorPrimary: '#fe5933' } }}>
-					<Navbar isAdmin={admin} />
-					{children}
+					<NextIntlClientProvider messages={messages}>
+						<Navbar isAdmin={admin} />
+						{children}
+					</NextIntlClientProvider>
 				</ClerkProvider>
 			</body>
 		</html>

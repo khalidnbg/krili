@@ -1,0 +1,224 @@
+{
+	"nav": {
+		"browse": "Parcourir",
+		"myListings": "Mes annonces",
+		"saved": "Favoris",
+		"admin": "Admin",
+		"signIn": "Connexion",
+		"signUp": "Inscription"
+	},
+	"home": {
+		"title": "Trouvez votre prochain chez-vous",
+		"subtitle": "Maisons, studios et chambres à louer dans tout le Maroc — publiées par des propriétaires vérifiés",
+		"latestListings": "Dernières annonces"
+	},
+	"listings": {
+		"title": "Parcourir les annonces",
+		"subtitle": "Rechercher des maisons, studios et chambres à louer dans tout le Maroc.",
+		"noResults": "Aucune annonce ne correspond à vos filtres",
+		"noResultsHint": "Essayez d'élargir la plage de prix ou de supprimer un filtre.",
+		"clearFilters": "Effacer les filtres",
+		"newListing": {
+			"title": "Publier une nouvelle annonce",
+			"subtitle": "Informez les locataires de votre propriété — les nouvelles annonces sont publiées après une rapide vérification."
+		},
+		"detail": {
+			"backToListings": "← Toutes les annonces",
+			"room": "{count, plural, =1 {pièce} other {# pièces}}",
+			"furnished": "Meublé",
+			"petFriendly": "Animaux acceptés",
+			"availableFrom": "Disponible à partir du {date}",
+			"securityDeposit": "Un dépôt de garantie de {amount} MAD est requis avant l'emménagement.",
+			"noSecurityDeposit": "Aucun dépôt de garantie requis.",
+			"verifiedLandlord": "Propriétaire vérifié"
+		}
+	},
+	"listingCard": {
+		"contactLandlord": "Contacter le propriétaire",
+		"save": "Enregistrer",
+		"saved": "Enregistré",
+		"viewDetails": "Voir les détails",
+		"rooms": "{count} pièce{count, plural, =1 {} other {s}}"
+	},
+	"listingForm": {
+		"title": "Titre",
+		"price": "Prix (MAD/mois)",
+		"propertyType": "Type de bien",
+		"rooms": "Nombre de pièces",
+		"city": "Ville",
+		"neighborhood": "Quartier",
+		"description": "Description",
+		"hasCaution": "Dépôt de garantie requis",
+		"cautionAmount": "Montant du dépôt (MAD)",
+		"submit": "Publier l'annonce",
+		"update": "Mettre à jour l'annonce",
+		"cancel": "Annuler",
+		"titlePlaceholder": "Ex. Studio lumineux à Maârif",
+		"typePlaceholder": "Sélectionner le type",
+		"roomsPlaceholder": "2",
+		"pricePlaceholder": "2500",
+		"priceDescription": "Loyer mensuel en Dirham marocain.",
+		"neighborhoodPlaceholder": "Ex. Maârif",
+		"cityPlaceholder": "Sélectionner la ville",
+		"cautionPlaceholder": "3000",
+		"descriptionPlaceholder": "Décrivez le bien, ses caractéristiques et à qui il convient…",
+		"beds": "Lits",
+		"bathrooms": "Salles de bain",
+		"furnished": "Meublé",
+		"petFriendly": "Animaux acceptés",
+		"availableFrom": "Disponible à partir du",
+		"photos": "Photos",
+		"photosDescription": "Ajoutez jusqu'à 5 photos — la première est utilisée comme couverture sur les cartes.",
+		"uploadingPhotos": "Téléchargement des photos…",
+		"publishListing": "Publier l'annonce",
+		"error": "Votre annonce n'a pas pu être publiée. Veuillez réessayer."
+	},
+	"bookmarks": {
+		"noSaved": "Aucune annonce sauvegardée",
+		"noSavedSubtitle": "Appuyez sur le signet de n'importe quelle annonce pour la garder ici.",
+		"browseListings": "Parcourir les annonces",
+		"title": "Annonces sauvegardées",
+		"savedCount": "{count} sauvegardée{count, plural, =1 {} other {s}}",
+		"error": "Vos annonces sauvegardées n'ont pas été chargées — réessayez plus tard."
+	},
+	"dashboard": {
+		"title": "Mes annonces",
+		"subtitle": "{count} annonce{count, plural, =1 {} other {s}} — gérez ce que vous avez publié.",
+		"newListing": "+ Nouvelle annonce",
+		"emptyState": {
+			"title": "Vous n'avez rien publié encore",
+			"subtitle": "Créez votre première annonce — elle apparaîtra ici après une rapide vérification.",
+			"cta": "Publier votre première annonce"
+		},
+		"edit": "Modifier",
+		"photos": "Photos",
+		"status": {
+			"pending": "En attente",
+			"published": "Publiée",
+			"rejected": "Refusée",
+			"rented": "Louée"
+		},
+		"reason": "Raison",
+		"contactRequests": "{count, plural, =0 {Aucune demande} one {# demande} other {# demandes}} de contact",
+		"noContactRequests": "Aucune demande de contact pour le moment",
+		"room": "pièce{count, plural, =1 {} other {s}}",
+		"perMonth": "MAD/mois",
+		"postedOn": "Publié le {date}"
+	},
+	"reports": {
+		"reasonScam": "Arnaque ou annonce frauduleuse",
+		"reasonFakePhotos": "Photos fausses ou trompeuses",
+		"reasonAlreadyRented": "Déjà loué",
+		"reasonOffensive": "Contenu offensant",
+		"reasonOther": "Autre",
+		"reported": "Signalé",
+		"reportListing": "Signaler l'annonce",
+		"reportThisListing": "Signaler cette annonce",
+		"reason": "Raison",
+		"detailsOptional": "Détails (facultatif)",
+		"submitting": "Envoi en cours…",
+		"submitReport": "Envoyer le signalement",
+		"cancel": "Annuler"
+	},
+	"contact": {
+		"messageOnWhatsApp": "Envoyer un message WhatsApp",
+		"whatsappMessage": "Bonjour, je suis intéressé par votre annonce sur Krili.",
+		"contactSaved": "Contact enregistré — le propriétaire peut voir que vous avez pris contact.",
+		"noPhoneSet": "Le propriétaire n'a pas encore défini de numéro de téléphone.",
+		"loading": "Chargement…",
+		"contactLandlord": "Contacter le propriétaire",
+		"error": "Une erreur s'est produite. Veuillez réessayer."
+	},
+	"admin": {
+		"moderationQueue": "File de modération",
+		"moderationSubtitle": "{count} annonce{count, plural, =1 {} other {s}} en attente de vérification.",
+		"allCaughtUp": "Tout est à jour",
+		"noListingsToReview": "Aucune annonce n'attend de vérification.",
+		"backToSite": "Retour au site",
+		"reports": "Signalements",
+		"noReports": "Aucun signalement ouvert.",
+		"users": "Utilisateurs",
+		"noUsers": "Aucun utilisateur trouvé.",
+		"approve": "Approuver",
+		"reject": "Refuser",
+		"resolve": "Résoudre",
+		"dismiss": "Rejeter",
+		"suspended": "Suspendu",
+		"landlord": "Propriétaire",
+		"reporter": "Signaleur",
+		"created": "créé le {date}",
+		"reason": "Raison",
+		"pending": "En attente",
+		"rejected": "Refusée",
+		"name": "Nom",
+		"email": "Email",
+		"phone": "Téléphone",
+		"role": "Rôle",
+		"verified": "Vérifié",
+		"listingsCount": "Annonces",
+		"joined": "Inscrit",
+		"actions": "Actions"
+	},
+	"propertyType": {
+		"house": "Maison",
+		"studio": "Studio",
+		"room": "Chambre",
+		"apartment": "Appartement"
+	},
+	"city": {
+		"casablanca": "Casablanca",
+		"rbat": "Rabat",
+		"marrakech": "Marrakech",
+		"fez": "Fès",
+		"tangier": "Tanger",
+		"aadir": "Agadir"
+	},
+	"neighborhood": {
+		"maarif": "Maârif",
+		"gauthier": "Gauthier",
+		"anfa": "Anfa",
+		"ainDiab": "Aïn Diâb",
+		"agdal": "Agdal",
+		"hassan": "Hassan",
+		"geliz": "Guéliz",
+		"medina": "Médina",
+		"villeNouvelle": "Ville Nouvelle",
+		"founty": "Founty",
+		"centreVille": "Centre Ville",
+		"corniche": "Corniche"
+	},
+	"filters": {
+		"city": "Ville",
+		"allCities": "Toutes les villes",
+		"type": "Type",
+		"allTypes": "Tous les types",
+		"rooms": "Pièces",
+		"any": "N'importe quel",
+		"onePlusRoom": "1+ pièce",
+		"roomsPlus": "{count}+ pièces",
+		"price": "Prix (MAD)",
+		"min": "Min",
+		"max": "Max",
+		"apply": "Appliquer",
+		"clearFilters": "Effacer les filtres",
+		"listingsFound": "{count} annonce{count, plural, =1 {} other {s}} trouvée{count, plural, =1 {} other {s}}"
+	},
+	"actions": {
+		"markAsRented": "Marquer comme loué",
+		"markAsAvailable": "Marquer comme disponible",
+		"updating": "Mise à jour…",
+		"delete": "Supprimer",
+		"deleting": "Suppression…",
+		"deleteConfirm": "Supprimer définitivement cette annonce ? Ses photos seront également supprimées.",
+		"deleteFailed": "Échec de la suppression"
+	},
+	"pagination": {
+		"previous": "Précédent",
+		"next": "Suivant",
+		"page": "Page {current} sur {total}"
+	},
+	"common": {
+		"madPerMonth": "MAD/mois",
+		"rooms": "{count} pièce{count, plural, =1 {} other {s}}"
+	}
+}

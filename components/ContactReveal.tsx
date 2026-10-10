@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { MessageCircle, Phone } from "lucide-react"
 import { revealContact } from "@/lib/actions/contact.action"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl"
 
 interface ContactRevealProps {
 	listingId: string
@@ -14,6 +15,7 @@ interface ContactRevealProps {
 
 const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProps) => {
 	const router = useRouter()
+	const t = useTranslations("contact")
 
 	const [revealed, setRevealed] = useState(false)
 	const [phone, setPhone] = useState<string | null>(null)
@@ -32,7 +34,7 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 				router.push("/sign-in")
 				return
 			}
-			setError(result.message ?? "Something went wrong. Please try again.")
+			setError(result.message ?? t("error"))
 			return
 		}
 
@@ -51,7 +53,7 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 				if (cancelled) return
 				if (!result.ok) {
 					if (result.reason === "auth") router.push("/sign-in")
-					else setError(result.message ?? "Something went wrong. Please try again.")
+					else setError(result.message ?? t("error"))
 					return
 				}
 				setPhone(result.phone)
@@ -64,9 +66,8 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
-
 	const waLink = phone
-		? `https://wa.me/${phone}?text=${encodeURIComponent("Hello, I'm interested in your listing on Krili.")}`
+		? `https://wa.me/${phone}?text=${encodeURIComponent(t("whatsappMessage"))}`
 		: null
 
 	return (
@@ -86,16 +87,16 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 							className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#1ebe5b] hover:shadow-md active:scale-[0.98]"
 						>
 							<MessageCircle className="size-4" />
-							Message on WhatsApp
+							{t("messageOnWhatsApp")}
 						</Link>
 						<p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-							Contact saved — the landlord can see you reached out.
+							{t("contactSaved")}
 						</p>
 					</div>
 				) : (
 					<div className="rounded-xl border border-border bg-muted/40 px-4 py-3">
 						<p className="text-sm text-muted-foreground">
-							The landlord hasn&apos;t set a phone number yet.
+							{t("noPhoneSet")}
 						</p>
 					</div>
 				)
@@ -105,7 +106,7 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 					disabled={busy}
 					className="w-full rounded-lg shadow-sm transition-transform active:scale-[0.98]"
 				>
-					{busy ? "Loading…" : "Contact landlord"}
+					{busy ? t("loading") : t("contactLandlord")}
 				</Button>
 			)}
 

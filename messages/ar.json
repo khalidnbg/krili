@@ -1,0 +1,224 @@
+{
+	"nav": {
+		"browse": "تصفح",
+		"myListings": "إعلاناتي",
+		"saved": "المحفوظة",
+		"admin": "الإدارة",
+		"signIn": "تسجيل الدخول",
+		"signUp": "إنشاء حساب"
+	},
+	"home": {
+		"title": "اعثر على منزلك القادم",
+		"subtitle": "منازل واستوديوهات وغرف للإيجار في جميع أنحاء المغرب — نشرها ملاك موثقون",
+		"latestListings": "أحدث الإعلانات"
+	},
+	"listings": {
+		"title": "تصفح الإعلانات",
+		"subtitle": "ابحث عن منازل واستوديوهات وغرف للإيجار في جميع أنحاء المغرب.",
+		"noResults": "لا توجد إعلانات تطابق فلاترك",
+		"noResultsHint": "حاول توسيع نطاق السعر أو إزالة فلتر.",
+		"clearFilters": "مسح الفلاتر",
+		"newListing": {
+			"title": "نشر إعلان جديد",
+			"subtitle": "أخبر المستأجرين عن عقارك — الإعلانات الجديدة تنشر بعد مراجعة سريعة."
+		},
+		"detail": {
+			"backToListings": "← جميع الإعلانات",
+			"room": "{count, plural, =1 {غرفة واحدة} other {# غرف}}",
+			"furnished": "مفروش",
+			"petFriendly": "يسمح بالحيوانات الأليفة",
+			"availableFrom": "متاح من {date}",
+			"securityDeposit": "مطلوب إيداع تأميني بقيمة {amount} درهم قبل الانتقال.",
+			"noSecurityDeposit": "لا يوجد إيداع تأميني مطلوب.",
+			"verifiedLandlord": "مالك موثق"
+		}
+	},
+	"listingCard": {
+		"contactLandlord": "اتصل بالمالك",
+		"save": "حفظ",
+		"saved": "محفوظ",
+		"viewDetails": "عرض التفاصيل",
+		"rooms": "{count, plural, =1 {غرفة واحدة} other {# غرف}}"
+	},
+	"listingForm": {
+		"title": "العنوان",
+		"price": "السعر (درهم/شهر)",
+		"propertyType": "نوع العقار",
+		"rooms": "عدد الغرف",
+		"city": "المدينة",
+		"neighborhood": "الحي",
+		"description": "الوصف",
+		"hasCaution": "مطلوب إيداع تأميني",
+		"cautionAmount": "مبلغ الإيداع (درهم)",
+		"submit": "نشر الإعلان",
+		"update": "تحديث الإعلان",
+		"cancel": "إلغاء",
+		"titlePlaceholder": "مثال: ستوديو مشرق في المعاريف",
+		"typePlaceholder": "اختر النوع",
+		"roomsPlaceholder": "2",
+		"pricePlaceholder": "2500",
+		"priceDescription": "الإيجار الشهري بالدرهم المغربي.",
+		"neighborhoodPlaceholder": "مثال: المعاريف",
+		"cityPlaceholder": "اختر المدينة",
+		"cautionPlaceholder": "3000",
+		"descriptionPlaceholder": "صف العقار ومميزاته ومن يناسبه…",
+		"beds": "الأسرة",
+		"bathrooms": "الحمامات",
+		"furnished": "مفروش",
+		"petFriendly": "يسمح بالحيوانات الأليفة",
+		"availableFrom": "متاح من",
+		"photos": "الصور",
+		"photosDescription": "أضف حتى 5 صور — الصورة الأولى تُستخدم كغلاف في البطاقات.",
+		"uploadingPhotos": "جاري رفع الصور…",
+		"publishListing": "نشر الإعلان",
+		"error": "لم يتمكن من نشر إعلانك. يرجى المحاولة مرة أخرى."
+	},
+	"bookmarks": {
+		"noSaved": "لا توجد إعلانات محفوظة",
+		"noSavedSubtitle": "اضغط على الإشارة المرجعية في أي إعلان للحفاظ عليه هنا.",
+		"browseListings": "تصفح الإعلانات",
+		"title": "الإعلانات المحفوظة",
+		"savedCount": "{count} محفوظ{count, plural, =1 {} other {ة}}",
+		"error": "لم يتم تحميل إعلاناتك المحفوظة — تحقق لاحقاً."
+	},
+	"dashboard": {
+		"title": "إعلاناتي",
+		"subtitle": "{count, plural, =0 {لا توجد إعلانات} one {إعلان واحد} other {# إعلانات}} — أدّر ما نشرته.",
+		"newListing": "+ إعلان جديد",
+		"emptyState": {
+			"title": "لم تنشر أي شيء بعد",
+			"subtitle": "أنشئ إعلانك الأول — سيظهر هنا بعد مراجعة سريعة.",
+			"cta": "نشر إعلانك الأول"
+		},
+		"edit": "تعديل",
+		"photos": "الصور",
+		"status": {
+			"pending": "قيد الانتظار",
+			"published": "منشور",
+			"rejected": "مرفوض",
+			"rented": "مؤجر"
+		},
+		"reason": "السبب",
+		"contactRequests": "{count, plural, =0 {لا توجد طلبات} one {طلب واحد} other {# طلبات}} للاتصال",
+		"noContactRequests": "لا توجد طلبات اتصال حتى الآن",
+		"room": "{count, plural, =1 {غرفة واحدة} other {# غرف}}",
+		"perMonth": "درهم/شهر",
+		"postedOn": "نشر في {date}"
+	},
+	"reports": {
+		"reasonScam": "احتيال أو إعلان مزيف",
+		"reasonFakePhotos": "صور مزيفة أو مضللة",
+		"reasonAlreadyRented": "تم تأجيره بالفعل",
+		"reasonOffensive": "محتوى مسيء",
+		"reasonOther": "أخرى",
+		"reported": "تم الإبلاغ",
+		"reportListing": "الإبلاغ عن الإعلان",
+		"reportThisListing": "الإبلاغ عن هذا الإعلان",
+		"reason": "السبب",
+		"detailsOptional": "التفاصيل (اختياري)",
+		"submitting": "جاري الإرسال…",
+		"submitReport": "إرسال البلاغ",
+		"cancel": "إلغاء"
+	},
+	"contact": {
+		"messageOnWhatsApp": "إرسال رسالة واتساب",
+		"whatsappMessage": "مرحباً، أنا مهتم بإعلانك على كريلي.",
+		"contactSaved": "تم حفظ الاتصال — المالك يمكنه أن يرى أنك تواصلت.",
+		"noPhoneSet": "لم يحدد المالك رقم هاتف بعد.",
+		"loading": "جاري التحميل…",
+		"contactLandlord": "اتصل بالمالك",
+		"error": "حدث خطأ. يرجى المحاولة مرة أخرى."
+	},
+	"admin": {
+		"moderationQueue": "قائمة المراجعة",
+		"moderationSubtitle": "{count, plural, =0 {لا توجد إعلانات} one {إعلان واحد} other {# إعلانات}} في انتظار المراجعة.",
+		"allCaughtUp": "تم الانتهاء من كل شيء",
+		"noListingsToReview": "لا توجد إعلانات في انتظار المراجعة.",
+		"backToSite": "العودة إلى الموقع",
+		"reports": "البلاغات",
+		"noReports": "لا توجد بلاغات مفتوحة.",
+		"users": "المستخدمون",
+		"noUsers": "لم يتم العثور على مستخدمين.",
+		"approve": "موافقة",
+		"reject": "رفض",
+		"resolve": "حل",
+		"dismiss": "تجاهل",
+		"suspended": "معلق",
+		"landlord": "المالك",
+		"reporter": "المبلغ",
+		"created": "أنشئ في {date}",
+		"reason": "السبب",
+		"pending": "قيد الانتظار",
+		"rejected": "مرفوض",
+		"name": "الاسم",
+		"email": "البريد الإلكتروني",
+		"phone": "الهاتف",
+		"role": "الدور",
+		"verified": "موثق",
+		"listingsCount": "الإعلانات",
+		"joined": "انضم",
+		"actions": "الإجراءات"
+	},
+	"propertyType": {
+		"house": "منزل",
+		"studio": "ستوديو",
+		"room": "غرفة",
+		"apartment": "شقة"
+	},
+	"city": {
+		"casablanca": "الدار البيضاء",
+		"rbat": "الرباط",
+		"marrakech": "مراكش",
+		"fez": "فاس",
+		"tangier": "طنجة",
+		"aadir": "أكادير"
+	},
+	"neighborhood": {
+		"maarif": "المعاريف",
+		"gauthier": "غوتييه",
+		"anfa": "أنفا",
+		"ainDiab": "عين الدیاب",
+		"agdal": "أكدال",
+		"hassan": "الحسن",
+		"geliz": "الغيليز",
+		"medina": "المدينة القديمة",
+		"villeNouvelle": "المدينة الجديدة",
+		"founty": "فونتي",
+		"centreVille": "وسط المدينة",
+		"corniche": "الكورنيش"
+	},
+	"filters": {
+		"city": "المدينة",
+		"allCities": "جميع المدن",
+		"type": "النوع",
+		"allTypes": "جميع الأنواع",
+		"rooms": "الغرف",
+		"any": "أي",
+		"onePlusRoom": "1+ غرفة",
+		"roomsPlus": "{count}+ غرف",
+		"price": "السعر (درهم)",
+		"min": "الأدنى",
+		"max": "الأعلى",
+		"apply": "تطبيق",
+		"clearFilters": "مسح الفلاتر",
+		"listingsFound": "{count, plural, =0 {لا توجد إعلانات} one {إعلان واحد} other {# إعلانات}} تم العثور عليها"
+	},
+	"actions": {
+		"markAsRented": "تعليم كمؤجر",
+		"markAsAvailable": "تعليم كمتاح",
+		"updating": "جاري التحديث…",
+		"delete": "حذف",
+		"deleting": "جاري الحذف…",
+		"deleteConfirm": "حذف هذا الإعلان نهائياً؟ سيتم أيضاً حذف صوره.",
+		"deleteFailed": "فشل الحذف"
+	},
+	"pagination": {
+		"previous": "السابق",
+		"next": "التالي",
+		"page": "الصفحة {current} من {total}"
+	},
+	"common": {
+		"madPerMonth": "درهم/شهر",
+		"rooms": "{count, plural, =1 {غرفة واحدة} other {# غرف}}"
+	}
+}
