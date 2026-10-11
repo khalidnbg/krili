@@ -9,8 +9,18 @@ import { auth } from "@clerk/nextjs/server"
 import { getLandlordProfiles, mapListingRow } from "@/lib/listing-mapper"
 import ReportListingButton from "@/components/ReportListingButton"
 import { getTranslations } from "next-intl/server"
+import { Suspense } from "react"
+import ListingDetailLoading from "./loading"
 
 const Page = async ({ params }: { params: Promise<{ id: string; locale: string }> }) => {
+  return (
+    <Suspense fallback={<ListingDetailLoading />}>
+      <ListingDetailContent params={params} />
+    </Suspense>
+  )
+}
+
+async function ListingDetailContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params
   const { userId } = await auth()
   const t = await getTranslations("listings.detail")

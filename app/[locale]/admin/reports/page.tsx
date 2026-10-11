@@ -4,10 +4,12 @@ import ReportReviewActions from "@/components/admin/ReportReviewActions"
 import { getOpenReports } from "@/lib/actions/reports.action"
 import { reportReasons } from "@/constants"
 import { getTranslations } from "next-intl/server"
+import { Suspense } from "react"
+import ReportsLoading from "./loading"
 
 const pageSize = 10
 
-const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }> }) => {
+async function ReportsContent({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
 	const t = await getTranslations("admin")
 	const { page } = await searchParams
 	const currentPage = Math.max(1, Number(page) || 1)
@@ -52,7 +54,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }>
 										</span>
 									</div>
 									{report.details && (
-										<p className="text-sm text-muted-foreground">“{report.details}”</p>
+										<p className="text-sm text-muted-foreground">"{report.details}"</p>
 									)}
 									<p className="text-xs text-muted-foreground">
 										Reporter {report.reporterId} · {new Date(report.createdAt).toLocaleString("en-GB")}
@@ -75,6 +77,14 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }>
 				searchParams={{}}
 			/>
 		</>
+	)
+}
+
+const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }> }) => {
+	return (
+		<Suspense fallback={<ReportsLoading />}>
+			<ReportsContent searchParams={searchParams} />
+		</Suspense>
 	)
 }
 

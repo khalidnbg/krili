@@ -5,10 +5,12 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import BookmarksLoading from "./loading";
 
 type EmbeddedNeighborhood = { city?: string; name?: string }
 
-const Page = async () => {
+async function BookmarksContent() {
 	const { userId } = await auth()
 	if (!userId) redirect("/sign-in")
 	const t = await getTranslations("bookmarks")
@@ -87,6 +89,14 @@ const Page = async () => {
 				</section>
 			)}
 		</main>
+	)
+}
+
+const Page = async () => {
+	return (
+		<Suspense fallback={<BookmarksLoading />}>
+			<BookmarksContent />
+		</Suspense>
 	)
 }
 

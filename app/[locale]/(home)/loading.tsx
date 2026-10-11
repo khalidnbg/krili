@@ -1,3 +1,7 @@
+"use client"
+
+import { useTranslations } from "next-intl"
+
 const SkeletonCard = () => (
 	<div className="flex flex-col gap-4 rounded-3xl border border-neutral-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
 		<div className="h-[200px] w-full animate-pulse rounded-2xl bg-neutral-100 sm:h-[230px] md:h-[250px]" />
@@ -12,6 +16,8 @@ const SkeletonCard = () => (
 )
 
 const Loading = () => {
+	const t = useTranslations("common")
+
 	return (
 		<main className="flex flex-col gap-16 px-4 py-10 md:px-8 md:py-14">
 			<section className="flex flex-col gap-3">
@@ -24,6 +30,7 @@ const Loading = () => {
 					<SkeletonCard key={i} />
 				))}
 			</section>
+			<p className="text-2xl font-medium text-neutral-400">{t("loading")}</p>
 		</main>
 	)
 }

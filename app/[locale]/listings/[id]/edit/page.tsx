@@ -1,8 +1,18 @@
 import EditListingForm from "@/components/EditListingForm"
 import NotFound from "@/components/NotFound"
 import { getManagedListing } from "@/lib/actions/listing.action"
+import { Suspense } from "react"
+import ListingEditLoading from "./loading"
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+	return (
+		<Suspense fallback={<ListingEditLoading />}>
+			<EditListingContent params={params} />
+		</Suspense>
+	)
+}
+
+async function EditListingContent({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params
 	const managed = await getManagedListing(id)
 

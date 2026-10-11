@@ -5,7 +5,8 @@
 		"saved": "المحفوظة",
 		"admin": "الإدارة",
 		"signIn": "تسجيل الدخول",
-		"signUp": "إنشاء حساب"
+		"signUp": "إنشاء حساب",
+		"newListing": "إعلان جديد"
 	},
 	"home": {
 		"title": "اعثر على منزلك القادم",
@@ -219,6 +220,7 @@
 	},
 	"common": {
 		"madPerMonth": "درهم/شهر",
-		"rooms": "{count, plural, =1 {غرفة واحدة} other {# غرف}}"
+		"rooms": "{count, plural, =1 {غرفة واحدة} other {# غرف}}",
+		"loading": "جاري التحميل…"
 	}
 }

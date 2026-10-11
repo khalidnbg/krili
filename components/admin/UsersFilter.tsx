@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useState, useEffect } from "react"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "../ui/button"
@@ -13,16 +13,24 @@ interface UsersFilterProps {
 
 const UsersFilter = ({ search = "", role = "" }: UsersFilterProps) => {
 	const router = useRouter()
+	const searchParams = useSearchParams()
 	const [value, setValue] = useState(search)
 	const [userRole, setUserRole] = useState(role)
 
-	const apply = () => {
-		const params = new URLSearchParams()
-		if (value.trim()) params.set("usersSearch", value.trim())
-		if (userRole) params.set("usersRole", userRole)
-		const qs = params.toString()
-		router.push(`/admin${qs ? `?${qs}` : ""}`)
-	}
+	// Debounced search effect
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			const params = new URLSearchParams(searchParams.toString())
+			if (value.trim()) params.set("search", value.trim())
+			else params.delete("search")
+			if (userRole) params.set("role", userRole)
+			else params.delete("role")
+			const qs = params.toString()
+			router.push(`/admin/users${qs ? `?${qs}` : ""}`)
+		}, 300) // 300ms debounce
+
+		return () => clearTimeout(timer)
+	}, [value, userRole, searchParams, router])
 
 	return (
 		<div className="flex flex-wrap items-end gap-3">
@@ -48,14 +56,13 @@ const UsersFilter = ({ search = "", role = "" }: UsersFilterProps) => {
 					</SelectContent>
 				</Select>
 			</label>
-			<Button type="button" onClick={apply}>Apply</Button>
 			<Button
 				type="button"
 				variant="ghost"
 				onClick={() => {
 					setValue("")
 					setUserRole("")
-					router.push("/admin")
+					router.push("/admin/users")
 				}}
 			>
 				Clear

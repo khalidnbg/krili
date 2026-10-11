@@ -609,9 +609,6 @@ export async function getContactRevealCounts(
 	const counts: Record<string, number> = {}
 	for (const row of data ?? []) {
 		counts[row.listing_id] = (counts[row.listing_id] ?? 0) + 1
-
-		console.log(row)
-		console.log("counts[row.listing_id] ", counts[row.listing_id])
 	}
 
 	return counts

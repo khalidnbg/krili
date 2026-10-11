@@ -38,8 +38,11 @@ export async function getUsers({
 
 
 	if (search?.trim()) {
-		const term = `%${search.trim()}%`
-		query = query.or(`first_name.ilike.${term},last_name.ilike.${term},email.ilike.${term}`)
+		const terms = search.trim().split(/\s+/).filter(Boolean)
+		for (const term of terms) {
+			const pattern = `%${term}%`
+			query = query.or(`first_name.ilike.${pattern},last_name.ilike.${pattern},email.ilike.${pattern}`)
+		}
 	}
 
 	if (role) query = query.eq("role", role)
@@ -50,12 +53,13 @@ export async function getUsers({
 		return null
 	}
 
-	// Listing counts per landlord — grouped aggregate from PostgREST.
-	const { data: aggregates } = await service.from("listings").select("landlord_id, count")
+	// Listing counts per landlord — fetch all listings and count manually.
+	const { data: listings } = await service.from("listings").select("landlord_id")
 
 	const counts = new Map<string, number>()
-	for (const row of aggregates ?? []) {
-		counts.set(row.landlord_id, Number((row.count as number | string | undefined) ?? 0))
+	for (const listing of listings ?? []) {
+		const current = counts.get(listing.landlord_id) ?? 0
+		counts.set(listing.landlord_id, current + 1)
 	}
 
 	const rows: AdminUserRow[] = (data ?? []).map((profile) => ({

@@ -10,6 +10,8 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import DashboardLoading from "./loading";
 
 type EmbeddedNeighborhood = { city?: string; name?: string }
 
@@ -76,7 +78,7 @@ const fetchMyListings = async (
 	return { listings, total: count ?? data?.length ?? 0 }
 }
 
-const Page = async ({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) => {
+async function DashboardContent({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) {
 	const { locale } = await params
 	const searchParamsResolved = await searchParams
 	const t = await getTranslations("dashboard")
@@ -96,10 +98,10 @@ const Page = async ({ searchParams, params }: { searchParams: SearchParams; para
 	const listings = result.listings
 	const totalPages = Math.max(1, Math.ceil(result.total / pageSize))
 
-		const searchParamsRecord: Record<string, string | string[] | undefined> = {}
-		for (const [key, value] of Object.entries(searchParamsResolved)) {
-			searchParamsRecord[key] = value
-		}
+	const searchParamsRecord: Record<string, string | string[] | undefined> = {}
+	for (const [key, value] of Object.entries(searchParamsResolved)) {
+		searchParamsRecord[key] = value
+	}
 
 	const revealCounts = await getContactRevealCounts(listings.map((listing) => listing.id))
 
@@ -237,6 +239,14 @@ const Page = async ({ searchParams, params }: { searchParams: SearchParams; para
 
 			<Pagination currentPage={page} totalPages={totalPages} basePath={`/${locale}/dashboard`} searchParams={searchParamsRecord} />
 		</main>
+	)
+}
+
+const Page = async ({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) => {
+	return (
+		<Suspense fallback={<DashboardLoading />}>
+			<DashboardContent searchParams={searchParams} params={params} />
+		</Suspense>
 	)
 }
 

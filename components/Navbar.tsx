@@ -1,13 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import Image from "next/image"
-import { Bookmark, Compass, LayoutDashboard, Menu, Plus, Shield, X } from "lucide-react"
+import { Bookmark, Compass, ExpandIcon, LayoutDashboard, Menu, Plus, Shield, X } from "lucide-react"
 import { SignInButton, Show, UserButton, SignUpButton } from "@clerk/nextjs"
 import { cn } from "@/lib/utils"
 import { useTranslations, useLocale } from "next-intl"
-import { usePathname, useRouter } from "@/i18n/routing"
+import { Link, usePathname, useRouter } from "@/i18n/routing"
 
 interface NavbarProps {
 	isAdmin?: boolean
@@ -20,7 +19,7 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 	const t = useTranslations("nav")
 	const [open, setOpen] = useState(false)
 
-	const isNewListingPage = pathname === `/${locale}/listings/new`
+	const isNewListingPage = pathname === "/listings/new"
 	const close = () => setOpen(false)
 
 	const switchLocale = (newLocale: string) => {
@@ -32,7 +31,6 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 		return () => cancelAnimationFrame(id)
 	}, [pathname])
 
-
 	useEffect(() => {
 		if (!open) return
 		const previous = document.body.style.overflow
@@ -42,25 +40,44 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 		}
 	}, [open])
 
-	const navLink = (href: string, label: string, Icon: typeof Compass) => (
-		<Link
-			href={`/${locale}${href}`}
-			className={cn(
-				"flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-				pathname === `/${locale}${href}`
-					? "bg-[#FE5933] text-white"
-					: "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
-			)}
-		>
-			<Icon className="size-4" />
-			{label}
-		</Link>
-	)
+	const navLink = (href: string, label: string, Icon: typeof Compass, exact = true) => {
+		const isActive = exact ? pathname === href : pathname.startsWith(href)
+		return (
+			<Link
+				href={href}
+				className={cn(
+					"flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+					isActive
+						? "bg-[#FE5933] text-white"
+						: "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
+				)}
+			>
+				<Icon className="size-4" />
+				{label}
+			</Link>
+		)
+	}
+
+	const mobileLink = (href: string, label: string, Icon: typeof Compass, exact = true) => {
+		const isActive = exact ? pathname === href : pathname.startsWith(href)
+		return (
+			<Link
+				href={href}
+				onClick={close}
+				className={cn(
+					"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
+					isActive ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
+				)}
+			>
+				<Icon className="size-4" /> {label}
+			</Link>
+		)
+	}
 
 	return (
 		<header className="sticky top-4 z-50 mx-4 md:mx-8">
 			<nav className="flex items-center justify-between gap-4 rounded-full border border-neutral-200/80 bg-white/90 px-4 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(0,0,0,0.08)] backdrop-blur-md">
-				<Link href={`/${locale}`} className="relative z-[70] shrink-0">
+				<Link href="/" className="relative z-[70] shrink-0">
 					<Image src="/logo.png" alt="logo" width={40} height={38} className="h-9 w-auto" />
 				</Link>
 
@@ -70,7 +87,7 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 					<Show when="signed-in">
 						{navLink("/dashboard", t("myListings"), LayoutDashboard)}
 						{navLink("/bookmarks", t("saved"), Bookmark)}
-						{isAdmin && navLink("/admin", t("admin"), Shield)}
+						{isAdmin && navLink("/admin", t("admin"), Shield, false)}
 					</Show>
 				</div>
 
@@ -85,10 +102,10 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 					<Show when="signed-in">
 						{!isNewListingPage && (
 							<Link
-								href={`/${locale}/listings/new`}
+								href="/listings/new"
 								className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
 							>
-								{t("browse")}
+								{t("newListing")}
 							</Link>
 						)}
 						<UserButton />
@@ -140,57 +157,19 @@ const Navbar = ({ isAdmin = false }: NavbarProps) => {
 						>
 							{locale === "fr" ? "العربية" : "Français"}
 						</button>
-						<Link
-							href={`/${locale}/listings`}
-							onClick={close}
-							className={cn(
-								"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-								pathname === `/${locale}/listings` ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
-							)}
-						>
-							<Compass className="size-4" /> {t("browse")}
-						</Link>
+						{mobileLink("/listings", t("browse"), Compass)}
 
 						<Show when="signed-in">
-							<Link
-								href={`/${locale}/dashboard`}
-								onClick={close}
-								className={cn(
-									"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-									pathname === `/${locale}/dashboard` ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
-								)}
-							>
-								<LayoutDashboard className="size-4" /> {t("myListings")}
-							</Link>
-							<Link
-								href={`/${locale}/bookmarks`}
-								onClick={close}
-								className={cn(
-									"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-									pathname === `/${locale}/bookmarks` ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
-								)}
-							>
-								<Bookmark className="size-4" /> {t("saved")}
-							</Link>
-							{isAdmin && (
-								<Link
-									href={`/${locale}/admin`}
-									onClick={close}
-									className={cn(
-										"flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium",
-										pathname.startsWith(`/${locale}/admin`) ? "bg-[#FE5933] text-white" : "text-neutral-700 hover:bg-neutral-100"
-									)}
-								>
-									<Shield className="size-4" /> {t("admin")}
-								</Link>
-							)}
+							{mobileLink("/dashboard", t("myListings"), LayoutDashboard)}
+							{mobileLink("/bookmarks", t("saved"), Bookmark)}
+							{isAdmin && mobileLink("/admin", t("admin"), Shield, false)}
 							{!isNewListingPage && (
 								<Link
-									href={`/${locale}/listings/new`}
+									href="/listings/new"
 									onClick={close}
 									className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
 								>
-									<Plus className="size-4" /> {t("browse")}
+									<Plus className="size-4" /> {t("newListing")}
 								</Link>
 							)}
 						</Show>

@@ -5,7 +5,8 @@
 		"saved": "Favoris",
 		"admin": "Admin",
 		"signIn": "Connexion",
-		"signUp": "Inscription"
+		"signUp": "Inscription",
+		"newListing": "Nouvelle annonce"
 	},
 	"home": {
 		"title": "Trouvez votre prochain chez-vous",
@@ -219,6 +220,7 @@
 	},
 	"common": {
 		"madPerMonth": "MAD/mois",
-		"rooms": "{count} pièce{count, plural, =1 {} other {s}}"
+		"rooms": "{count, plural, =1 {1 chambre} other {# chambres}}",
+		"loading": "Chargement…"
 	}
 }

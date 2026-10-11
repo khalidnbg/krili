@@ -1,4 +1,9 @@
+"use client"
+
+import { useTranslations } from "next-intl"
+
 export default function AdminLoading() {
+	const t = useTranslations("common")
 	return (
 		<main className="flex flex-col gap-6 w-full">
 			<div className="h-8 w-full animate-pulse rounded-full bg-neutral-200" />
@@ -7,6 +12,7 @@ export default function AdminLoading() {
 					<div key={i} className="h-32 animate-pulse rounded-4xl bg-neutral-200" />
 				))}
 			</div>
+			<p className="text-2xl font-medium text-neutral-400">{t("loading")}</p>
 		</main>
 	)
 }

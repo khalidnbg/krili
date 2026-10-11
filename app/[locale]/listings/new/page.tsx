@@ -1,5 +1,7 @@
 import ListingForm from "@/components/ListingForm"
 import { getTranslations } from "next-intl/server"
+import { Suspense } from "react"
+import NewListingLoading from "./loading"
 
 const NewListing = async () => {
 	const t = await getTranslations("listings.newListing")
@@ -18,4 +20,12 @@ const NewListing = async () => {
 	)
 }
 
-export default NewListing
+const Page = async () => {
+	return (
+		<Suspense fallback={<NewListingLoading />}>
+			<NewListing />
+		</Suspense>
+	)
+}
+
+export default Page

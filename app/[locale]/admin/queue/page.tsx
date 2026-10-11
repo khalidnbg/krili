@@ -5,17 +5,20 @@ import Pagination from "@/components/Pagination"
 import { getCoverPhotoUrl, getPropertyColor } from "@/lib/utils"
 import { getModerationQueue } from "@/lib/actions/listing.action"
 import { getTranslations } from "next-intl/server"
+import { Suspense } from "react"
+import QueueLoading from "./loading"
 
 const pageSize = 10
 
-const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }> }) => {
-	const t = await getTranslations("admin")
+async function QueueContent({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
 	const { page } = await searchParams
 	const currentPage = Math.max(1, Number(page) || 1)
 
 	const queueResult = await getModerationQueue(currentPage, pageSize)
 	const queue = queueResult?.items ?? []
 	const totalPages = Math.max(1, Math.ceil((queueResult?.total ?? 0) / pageSize))
+
+	const t = await getTranslations("admin")
 
 	return (
 		<>
@@ -95,6 +98,14 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }>
 				searchParams={{}}
 			/>
 		</>
+	)
+}
+
+const Page = async ({ searchParams }: { searchParams: Promise<{ page?: string }> }) => {
+	return (
+		<Suspense fallback={<QueueLoading />}>
+			<QueueContent searchParams={searchParams} />
+		</Suspense>
 	)
 }
 

@@ -3,16 +3,17 @@ import UsersFilter from "@/components/admin/UsersFilter"
 import SuspendUserButton from "@/components/admin/SuspendUserButton"
 import { getUsers } from "@/lib/actions/admin-users.action"
 import { getTranslations } from "next-intl/server"
+import { Suspense } from "react"
+import UsersLoading from "./loading"
 
 const pageSize = 10
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
-const Page = async ({ searchParams }: { searchParams: SearchParams }) => {
+async function UsersContent({ searchParams }: { searchParams: SearchParams }) {
 	const t = await getTranslations("admin")
 	const sp = await searchParams
 	const str = (key: string) => (typeof sp[key] === "string" ? (sp[key] as string) : "")
-
 
 	const currentPage = Math.max(1, Number(str("page")) || 1)
 	const search = str("search")
@@ -94,6 +95,14 @@ const Page = async ({ searchParams }: { searchParams: SearchParams }) => {
 				searchParams={preservedParams}
 			/>
 		</section>
+	)
+}
+
+const Page = async ({ searchParams }: { searchParams: SearchParams }) => {
+	return (
+		<Suspense fallback={<UsersLoading />}>
+			<UsersContent searchParams={searchParams} />
+		</Suspense>
 	)
 }
 
