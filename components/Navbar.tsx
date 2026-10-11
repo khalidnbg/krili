@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Bookmark, Compass, ExpandIcon, LayoutDashboard, Menu, Plus, Shield, X } from "lucide-react"
+import { Bookmark, Compass, LayoutDashboard, Menu, Plus, Shield, X } from "lucide-react"
 import { SignInButton, Show, UserButton, SignUpButton } from "@clerk/nextjs"
 import { cn } from "@/lib/utils"
 import { useTranslations, useLocale } from "next-intl"

@@ -54,7 +54,7 @@ async function ReportsContent({ searchParams }: { searchParams: Promise<{ page?:
 										</span>
 									</div>
 									{report.details && (
-										<p className="text-sm text-muted-foreground">"{report.details}"</p>
+										<p className="text-sm text-muted-foreground">&ldquo;{report.details}&rdquo;</p>
 									)}
 									<p className="text-xs text-muted-foreground">
 										Reporter {report.reporterId} · {new Date(report.createdAt).toLocaleString("en-GB")}
