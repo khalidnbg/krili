@@ -42,6 +42,9 @@ const ReportListingButton = ({ listingId, initialReported = false }: ReportListi
     } else {
       if (result.reason === "auth") {
         router.push("/sign-in")
+      } else if (result.reason === "rate_limited") {
+        const minutes = Math.ceil((result.retryAfterSeconds ?? 60) / 60)
+        setError(t("rateLimited", { minutes }))
       } else {
         setError(result.message ?? "Could not submit the report.")
       }

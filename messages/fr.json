@@ -72,7 +72,11 @@
 		"photosDescription": "Ajoutez jusqu'à 5 photos — la première est utilisée comme couverture sur les cartes.",
 		"uploadingPhotos": "Téléchargement des photos…",
 		"publishListing": "Publier l'annonce",
-		"error": "Votre annonce n'a pas pu être publiée. Veuillez réessayer."
+		"error": "Votre annonce n'a pas pu être publiée. Veuillez réessayer.",
+		"rateLimited": {
+			"minutes": "Vous avez publié beaucoup d'annonces. Réessayez dans {value} minute{value, plural, =1 {} other {s}}.",
+			"hours": "Vous avez publié beaucoup d'annonces. Réessayez dans {value} heure{value, plural, =1 {} other {s}}."
+		}
 	},
 	"bookmarks": {
 		"noSaved": "Aucune annonce sauvegardée",
@@ -119,7 +123,8 @@
 		"detailsOptional": "Détails (facultatif)",
 		"submitting": "Envoi en cours…",
 		"submitReport": "Envoyer le signalement",
-		"cancel": "Annuler"
+		"cancel": "Annuler",
+		"rateLimited": "Vous avez soumis beaucoup de signalements. Réessayez dans {minutes} jour{minutes, plural, =1 {} other {s}}."
 	},
 	"contact": {
 		"messageOnWhatsApp": "Envoyer un message WhatsApp",
@@ -128,7 +133,8 @@
 		"noPhoneSet": "Le propriétaire n'a pas encore défini de numéro de téléphone.",
 		"loading": "Chargement…",
 		"contactLandlord": "Contacter le propriétaire",
-		"error": "Une erreur s'est produite. Veuillez réessayer."
+		"error": "Une erreur s'est produite. Veuillez réessayer.",
+		"rateLimited": "Vous avez demandé beaucoup de contacts. Réessayez dans {minutes} minute{minutes, plural, =1 {} other {s}}."
 	},
 	"admin": {
 		"moderationQueue": "File de modération",

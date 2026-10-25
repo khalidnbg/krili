@@ -7,11 +7,12 @@ import { isAdmin } from "../admin";
 import { assertNotSuspended } from "../auth-guards";
 import { listingUnpublishedFromReportEmail } from "../email/templates";
 import { sendLandlordStatusEmail } from "../email/send";
+import { checkRateLimit } from "../rate-limit";
 
 /* ---------------- tenant: create report ---------------- */
 export type ReportActionResult =
 	| { ok: true; alreadyReported?: boolean }
-	| { ok: false; reason: "auth" | "not-found" | "error"; message?: string }
+	| { ok: false; reason: "auth" | "not-found" | "error" | "rate_limited"; message?: string; retryAfterSeconds?: number }
 
 export async function createReport(input: ReportFormValues): Promise<ReportActionResult> {
 	const parsed = reportSchema.safeParse(input)
@@ -52,6 +53,19 @@ export async function createReport(input: ReportFormValues): Promise<ReportActio
 		.maybeSingle()
 
 	if (existing) return { ok: true, alreadyReported: true }
+
+	// Admin exemption
+	if (!(await isAdmin())) {
+		const rateLimit = await checkRateLimit("createReport", userId)
+		if (!rateLimit.ok) {
+			return {
+				ok: false,
+				reason: "rate_limited",
+				message: "You've submitted many reports. Please try again later.",
+				retryAfterSeconds: rateLimit.retryAfterSeconds,
+			}
+		}
+	}
 
 	const details = parsed.data.details?.trim() || null
 

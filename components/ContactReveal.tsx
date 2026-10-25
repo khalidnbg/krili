@@ -34,6 +34,11 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 				router.push("/sign-in")
 				return
 			}
+			if (result.reason === "rate_limited") {
+				const minutes = Math.ceil((result.retryAfterSeconds ?? 60) / 60)
+				setError(t("rateLimited", { minutes }))
+				return
+			}
 			setError(result.message ?? t("error"))
 			return
 		}
@@ -53,6 +58,10 @@ const ContactReveal = ({ listingId, initialRevealed = false }: ContactRevealProp
 				if (cancelled) return
 				if (!result.ok) {
 					if (result.reason === "auth") router.push("/sign-in")
+					else if (result.reason === "rate_limited") {
+						const minutes = Math.ceil((result.retryAfterSeconds ?? 60) / 60)
+						setError(t("rateLimited", { minutes }))
+					}
 					else setError(result.message ?? t("error"))
 					return
 				}

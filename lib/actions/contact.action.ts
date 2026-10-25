@@ -4,10 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { createServiceRoleClient, createSupabaseClient } from "../supabase";
 import { normalizeWhatsAppPhone } from "../utils";
 import { assertNotSuspended } from "../auth-guards";
+import { checkRateLimit } from "../rate-limit";
+import { isAdmin } from "../admin";
 
 export type RevealContactResult =
 	| { ok: true; phone: string | null }
-	| { ok: false; reason: "auth" | "not-found" | "error"; message?: string }
+	| { ok: false; reason: "auth" | "not-found" | "error" | "rate_limited"; message?: string; retryAfterSeconds?: number }
 
 export async function revealContact(listingId: string): Promise<RevealContactResult> {
 
@@ -22,6 +24,36 @@ export async function revealContact(listingId: string): Promise<RevealContactRes
 	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 		console.error("revealContact: SUPABASE_SERVICE_ROLE_KEY is not set")
 		return { ok: false, reason: "error", message: "Contact is temporarily unavailable." }
+	}
+
+	// Admin exemption
+	if (await isAdmin()) {
+		// Skip rate limit check for admins
+	} else {
+		const supabase = createSupabaseClient()
+
+		// 1) Check if already revealed (idempotent — one row per tenant per listing).
+		const { data: existing } = await supabase
+			.from("contact_reveals")
+			.select("id")
+			.eq("listing_id", listingId)
+			.eq("tenant_id", userId)
+			.maybeSingle()
+
+		if (existing) {
+			// Already revealed, skip rate limit check and proceed to return contact
+		} else {
+			// New reveal: check rate limit before inserting
+			const rateLimit = await checkRateLimit("revealContact", userId)
+			if (!rateLimit.ok) {
+				return {
+					ok: false,
+					reason: "rate_limited",
+					message: "You've requested a lot of contacts. Please try again later.",
+					retryAfterSeconds: rateLimit.retryAfterSeconds,
+				}
+			}
+		}
 	}
 
 	const supabase = createSupabaseClient()

@@ -4,20 +4,20 @@
 
 **Krili** is a house / studio / room rental marketplace for Morocco (prices in MAD/month). Landlords post listings with photos and details; tenants browse, filter, save, and reveal landlord contacts; an admin moderates publishing.
 
-**Product loop:** Landlord creates listing → status `pending` → admin approves → `published` (visible publicly) → tenant browses/filters → saves (bookmark) → clicks *Contact landlord* → reveals phone + WhatsApp link (logged as a demand signal).
+**Product loop:** Landlord creates listing → status `pending` → admin approves → `published` (visible publicly) → tenant browses/filters → saves (bookmark) → clicks _Contact landlord_ → reveals phone + WhatsApp link (logged as a demand signal).
 
 ## 2. Tech stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js **16.3.4** (App Router, Turbopack) |
-| React | **19.2.8** |
-| Styling | Tailwind CSS **v4** + `tw-animate-css`, shadcn/ui `base-nova` style |
-| UI kit | Base UI (`@base-ui/react`), Radix (`@radix-ui/react-label`, `react-slot`), **lucide-react** icons |
-| Forms | `react-hook-form` **7.87** + `zod` **3.25** + `@hookform/resolvers/zod` **5.9** |
-| Auth | **Clerk** NextJS v7 |
-| Storage/DB | **Supabase** (Postgres + RLS, publishable-key client + service-role client) |
-| Images | **Cloudinary** (signed upload/destroy API) |
+| Layer      | Choice                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| Framework  | Next.js **16.3.4** (App Router, Turbopack)                                                        |
+| React      | **19.2.8**                                                                                        |
+| Styling    | Tailwind CSS **v4** + `tw-animate-css`, shadcn/ui `base-nova` style                               |
+| UI kit     | Base UI (`@base-ui/react`), Radix (`@radix-ui/react-label`, `react-slot`), **lucide-react** icons |
+| Forms      | `react-hook-form` **7.87** + `zod` **3.25** + `@hookform/resolvers/zod` **5.9**                   |
+| Auth       | **Clerk** NextJS v7                                                                               |
+| Storage/DB | **Supabase** (Postgres + RLS, publishable-key client + service-role client)                       |
+| Images     | **Cloudinary** (signed upload/destroy API)                                                        |
 
 ## 3. Architecture
 
@@ -92,6 +92,7 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 **`reports`** — `listing_id`, `reporter_id`, `reason`, `details`, `status` (`open|reviewed|dismissed`) + partial unique index `reports_one_open_per_reporter_listing` on `(reporter_id, listing_id) WHERE status = 'open'` (a tenant can report again once no report is open).
 
 **RLS highlights** (all keyed on `auth.jwt()->>'sub'` = Clerk user id):
+
 - anybody selects **published** listings; owner sees own at any status
 - landlords insert/update/delete **own** listings (a **delete policy** was required to make deletion work)
 - tenants insert their own `contact_reveals` / `saved_listings`
@@ -100,7 +101,7 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 - profiles: users only read/write **their own** row (→ landlord names/phones via service role)
 - neighborhoods: public read + signed-in insert (policy added so `createListing` can self-seed)
 
-> These ALTERs must have been applied (see the SQL in *Setup*): `profiles.first_name/last_name/email/avatar_url`, `listings.description/beds/bathrooms/furnished/pet_friendly/available_from/amenities`, `listings.property_type`, neighborhoods insert policy, **listings delete policy**, `reports.details` + partial open-report unique index.
+> These ALTERs must have been applied (see the SQL in _Setup_): `profiles.first_name/last_name/email/avatar_url`, `listings.description/beds/bathrooms/furnished/pet_friendly/available_from/amenities`, `listings.property_type`, neighborhoods insert policy, **listings delete policy**, `reports.details` + partial open-report unique index.
 
 ## 6. Auth & authorization
 
@@ -110,53 +111,39 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 
 ## 7. Routes
 
-| Route | Access | Purpose |
-|---|---|---|
-| `/` | public | Home (published listings) |
-| `/listings` | public | Browse + filters (`?city&type&minPrice&maxPrice&rooms`) |
-| `/listings/new` | signed-in | Create listing |
-| `/listings/[id]` | public | Detail + gallery + contact reveal |
-| `/listings/[id]/edit` | owner | Edit listing + replace photos |
-| `/dashboard` | signed-in | My listings (status badges, edit/delete) |
-| `/bookmarks` | signed-in | Saved listings |
-| `/admin` | admin | Moderation + Reports queues |
-| `/sign-in`, `/sign-up` | — | Clerk |
+| Route                  | Access    | Purpose                                                 |
+| ---------------------- | --------- | ------------------------------------------------------- |
+| `/`                    | public    | Home (published listings)                               |
+| `/listings`            | public    | Browse + filters (`?city&type&minPrice&maxPrice&rooms`) |
+| `/listings/new`        | signed-in | Create listing                                          |
+| `/listings/[id]`       | public    | Detail + gallery + contact reveal                       |
+| `/listings/[id]/edit`  | owner     | Edit listing + replace photos                           |
+| `/dashboard`           | signed-in | My listings (status badges, edit/delete)                |
+| `/bookmarks`           | signed-in | Saved listings                                          |
+| `/admin`               | admin     | Moderation + Reports queues                             |
+| `/sign-in`, `/sign-up` | —         | Clerk                                                   |
 
 ## 8. Features implemented (task log)
 
 **Foundation / domain**
+
 1. Converted tutoring app → rental platform: `constants` (propertyTypes/cities/neighborhoods), global types, `types/index.ts`.
 2. Shared zod `listingSchema` (RHF + resolver), tenant/landlord "both" role model.
 3. `lib/listing-mapper.ts` — single row→`Listing` mapper + `getLandlordProfiles` (service role).
 
-**Browsing**
-4. Home: featured card grid + latest table (published only, sample-data fallback).
-5. Listing cards: cover photo, type badge, price/rooms, bookmark toggle.
-6. `ListingPhotoGallery`: portrait cover + thumbnails (laptop: cover left / thumbs right; mobile stacked); fixed thumbnail-index bug.
-7. Search & filters on `/listings` with shareable query params (SQL filters + city post-filter).
+**Browsing** 4. Home: featured card grid + latest table (published only, sample-data fallback). 5. Listing cards: cover photo, type badge, price/rooms, bookmark toggle. 6. `ListingPhotoGallery`: portrait cover + thumbnails (laptop: cover left / thumbs right; mobile stacked); fixed thumbnail-index bug. 7. Search & filters on `/listings` with shareable query params (SQL filters + city post-filter).
 
-**Auth / nav / shell**
-8. Responsive Navbar: desktop pills, mobile hamburger + **dimmed overlay menu**, Admin link, "My listings"/"Saved"/"Browse", current-page highlight, scroll lock.
+**Auth / nav / shell** 8. Responsive Navbar: desktop pills, mobile hamburger + **dimmed overlay menu**, Admin link, "My listings"/"Saved"/"Browse", current-page highlight, scroll lock.
 
-**Landlord flow**
-9. Create form: title, type, rooms, price, neighborhood, city, **description, beds, bathrooms, furnished, pet-friendly, available-from**, caution + amount, photos; zod validation; Cloudinary upload → `listing_photos`.
-10. Dashboard `/dashboard` — my listings with `pending/published/rejected` badges + rejection reason.
-11. Manage listings — `/listings/[id]/edit` (pre-filled), **delete** (with Cloudinary cleanup + verified delete), **replace photos** (`PhotoManager` + `replaceManagedPhotos`), edit resets status → `pending`.
+**Landlord flow** 9. Create form: title, type, rooms, price, neighborhood, city, **description, beds, bathrooms, furnished, pet-friendly, available-from**, caution + amount, photos; zod validation; Cloudinary upload → `listing_photos`. 10. Dashboard `/dashboard` — my listings with `pending/published/rejected` badges + rejection reason. 11. Manage listings — `/listings/[id]/edit` (pre-filled), **delete** (with Cloudinary cleanup + verified delete), **replace photos** (`PhotoManager` + `replaceManagedPhotos`), edit resets status → `pending`.
 
-**Tenant flow**
-12. Bookmarks — `saved_listings` table + `toggleBookmark` + `/bookmarks` page.
-13. Contact reveal — `revealContact` (inserts row, idempotent) → phone + **WhatsApp link** (normalized Moroccan numbers); already-revealed users see it instantly; RLS keeps phones private otherwise.
+**Tenant flow** 12. Bookmarks — `saved_listings` table + `toggleBookmark` + `/bookmarks` page. 13. Contact reveal — `revealContact` (inserts row, idempotent) → phone + **WhatsApp link** (normalized Moroccan numbers); already-revealed users see it instantly; RLS keeps phones private otherwise.
 
-**Admin flow**
-14. Moderation queue `/admin` — reject with reason, approve (`status → published`); service-role reads.
+**Admin flow** 14. Moderation queue `/admin` — reject with reason, approve (`status → published`); service-role reads.
 
-**Identity**
-15. Landlord profiles — Clerk first/last name + avatar synced to `profiles` (`ensureProfile`); shown on detail page via `getLandlordProfiles`.
+**Identity** 15. Landlord profiles — Clerk first/last name + avatar synced to `profiles` (`ensureProfile`); shown on detail page via `getLandlordProfiles`.
 
-**Reporting & trust**
-16. Reports — tenant reports a **published** listing (reason dropdown + optional details, `reportSchema`, `reports.action.ts`); admin queue shows only `open` reports with listing context.
-17. Report resolution — admin **Resolve** (report-only) or **Resolve & unpublish** (sets listing `rejected` with a reason the landlord sees on `/dashboard`), or **Dismiss**; the row leaves the open queue either way. **Re-reporting** is allowed once a report is no longer open (partial unique index).
-18. Reveal counts — `/dashboard` shows per-listing count of distinct tenants who requested contact (`getContactRevealCounts`, owner-scoped by RLS; one row per tenant/listing thanks to `revealContact` idempotency).
+**Reporting & trust** 16. Reports — tenant reports a **published** listing (reason dropdown + optional details, `reportSchema`, `reports.action.ts`); admin queue shows only `open` reports with listing context. 17. Report resolution — admin **Resolve** (report-only) or **Resolve & unpublish** (sets listing `rejected` with a reason the landlord sees on `/dashboard`), or **Dismiss**; the row leaves the open queue either way. **Re-reporting** is allowed once a report is no longer open (partial unique index). 18. Reveal counts — `/dashboard` shows per-listing count of distinct tenants who requested contact (`getContactRevealCounts`, owner-scoped by RLS; one row per tenant/listing thanks to `revealContact` idempotency).
 
 ## 9. Key gotchas learned (important for future work)
 
@@ -183,6 +170,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SERVICE_ROLE_KEY          # server-only (admin, phones, landlord names)
 ADMIN_USER_IDS                     # comma-separated Clerk user ids
 CLOUDINARY_CLOUD_NAME / _API_KEY / _API_SECRET
+Environment variables (`.env`)
 ```
 
 ## 11. Setup & commands
@@ -232,7 +220,7 @@ create index if not exists reports_status_created_at_idx
 
 ## 12. Known gaps / next steps
 
-- **Reveal analytics, deeper**: show *who* asked (name + date) and notify landlords on new reveals.
+- **Reveal analytics, deeper**: show _who_ asked (name + date) and notify landlords on new reveals.
 - **Admin "landlord side"**: surface `rejection_reason` clearly and let landlords resubmit edited listings (edits already reset to `pending`).
 - **Amenities** chip selector in forms (DB/type/mapper already support it).
 - **Pagination** on browse (`limit(24)` today) and **drag-to-reorder** photos (buttons today).
@@ -240,4 +228,4 @@ create index if not exists reports_status_created_at_idx
 
 ---
 
-*Generated for the Krili rental platform — see also `README.md` for bootstrap instructions.*
+_Generated for the Krili rental platform — see also `README.md` for bootstrap instructions._

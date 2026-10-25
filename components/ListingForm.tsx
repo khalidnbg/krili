@@ -38,6 +38,13 @@ const ListingForm = () => {
 	const [submitError, setSubmitError] = useState<string | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
+	const formatRetry = (seconds: number) => {
+		const minutes = Math.ceil(seconds / 60)
+		if (minutes < 60) return { unit: "minutes" as const, value: minutes }
+		const hours = Math.ceil(minutes / 60)
+		return { unit: "hours" as const, value: hours }
+	}
+
 	const form = useForm<z.infer<typeof listingSchema>>({
 		resolver: zodResolver(listingSchema),
 		defaultValues: {
@@ -54,7 +61,7 @@ const ListingForm = () => {
 			bathrooms: 1,
 			furnished: false,
 			petFriendly: false,
-			availableFrom: ""
+			availableFrom: "",
 		},
 	})
 	const hasCaution = useWatch({ control: form.control, name: "hasCaution" })
@@ -67,8 +74,14 @@ const ListingForm = () => {
 			const photoUrls = await uploadListingPhotos(photos.files)
 			const listing = await createListing(values, photoUrls, photos.coverIndex)
 
-			if (!listing || !("id" in listing)) {
-				throw new Error(t("error"))
+			if (!listing || "ok" in listing && !listing.ok) {
+				if (listing && "reason" in listing && listing.reason === "rate_limited") {
+					const retry = formatRetry(listing.retryAfterSeconds ?? 60)
+					setSubmitError(t(`rateLimited.${retry.unit}`, { value: retry.value }))
+					return
+				}
+				setSubmitError(t("error"))
+				return
 			}
 
 			router.push(`/listings/${listing.id}`)

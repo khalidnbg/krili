@@ -111,3 +111,15 @@ type AdminUserRow = {
 	listingCount: number
 	createdAt: string
 }
+
+type CreateListingResult =
+	| { ok: true; listing: Listing }
+	| {
+		ok: false
+		reason: "unauthenticated" | "suspended" | "invalid" | "rate_limited" | "server_error"
+		retryAfterSeconds?: number
+	}
+
+type UploadSignatureResult =
+	| { ok: true; cloudName: string; apiKey: string; publicId: string; signature: string; timestamp: string }
+	| { ok: false; reason: "unauthenticated" | "rate_limited" | "not_configured"; retryAfterSeconds?: number }

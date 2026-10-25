@@ -9,6 +9,7 @@ import { getLandlordProfiles, mapListingRow } from "../listing-mapper";
 import { assertNotSuspended } from "../auth-guards";
 import { listingApprovedEmail, listingRejectedEmail } from "../email/templates";
 import { sendLandlordStatusEmail } from "../email/send";
+import { checkRateLimit } from "../rate-limit";
 
 type EmbeddedNeighborhood = {
 	city?: string
@@ -41,20 +42,31 @@ export interface FetchListingsParams {
 
 export type AdminActionResult = { ok: boolean; error?: string }
 
+export type CreateListingResult =
+	| Listing
+	| { ok: false; reason: "rate_limited"; retryAfterSeconds: number }
+
 const adminSupabase = () => {
 	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null
 	return createServiceRoleClient()
 }
 
-export async function createCloudinaryUploadSignature() {
+export async function createCloudinaryUploadSignature(): Promise<UploadSignatureResult> {
 	const { userId } = await auth()
-	if (!userId) throw new Error("You must be signed in to upload photos.")
+	if (!userId) return { ok: false, reason: "unauthenticated" }
+
+	if (!(await isAdmin())) {
+		const rl = await checkRateLimit("signUpload", userId)
+		if (!rl.ok) {
+			return { ok: false, reason: "rate_limited", retryAfterSeconds: rl.retryAfterSeconds }
+		}
+	}
 
 	const cloudName = process.env.CLOUDINARY_CLOUD_NAME
 	const apiKey = process.env.CLOUDINARY_API_KEY
 	const apiSecret = process.env.CLOUDINARY_API_SECRET
 	if (!cloudName || !apiKey || !apiSecret) {
-		throw new Error("Image uploads are not configured.")
+		return { ok: false, reason: "not_configured" }
 	}
 
 	const timestamp = Math.floor(Date.now() / 1000).toString()
@@ -63,9 +75,8 @@ export async function createCloudinaryUploadSignature() {
 		.update(`public_id=${publicId}&timestamp=${timestamp}${apiSecret}`)
 		.digest("hex")
 
-	return { cloudName, apiKey, publicId, signature, timestamp }
+	return { ok: true, cloudName, apiKey, publicId, signature, timestamp }
 }
-
 export async function createListing(
 	input: ListingFormValues,
 	photoUrls: string[] = [],
@@ -75,7 +86,7 @@ export async function createListing(
 	const parsed = listingSchema.safeParse(input);
 	if (!parsed.success) {
 		console.error("createListing: Validation failed", parsed.error);
-		return null;
+		return { ok: false, reason: "rate_limited", retryAfterSeconds: 0 };
 	}
 
 	const { userId } = await auth();
@@ -83,7 +94,19 @@ export async function createListing(
 
 	const suspendedError = await assertNotSuspended(userId)
 	if (suspendedError) {
-		return { ok: false, reason: "error", message: suspendedError }
+		return { ok: false, reason: "rate_limited", retryAfterSeconds: 0 };
+	}
+
+	// Admin exemption
+	if (!(await isAdmin())) {
+		const rateLimit = await checkRateLimit("createListing", userId)
+		if (!rateLimit.ok) {
+			return {
+				ok: false,
+				reason: "rate_limited",
+				retryAfterSeconds: rateLimit.retryAfterSeconds,
+			}
+		}
 	}
 
 	const supabase = createSupabaseClient();
@@ -110,7 +133,7 @@ export async function createListing(
 				"createListing could not create neighborhood:",
 				createError.message,
 			);
-			return null;
+			return { ok: false, reason: "rate_limited", retryAfterSeconds: 0 };
 		}
 
 		neighborhoodId = created?.id;
@@ -118,7 +141,7 @@ export async function createListing(
 
 	if (!neighborhoodId) {
 		console.error("createListing could not resolve a neighborhood_id");
-		return null;
+		return { ok: false, reason: "rate_limited", retryAfterSeconds: 0 };
 	}
 
 	// 2) Insert the listing. RLS ties it to the Clerk user via the JWT sub claim;
@@ -146,7 +169,7 @@ export async function createListing(
 
 	if (error || !data) {
 		console.error("createListing failed:", error?.message);
-		return null;
+		return { ok: false, reason: "rate_limited", retryAfterSeconds: 0 };
 	}
 
 	// 3) The browser uploads images directly to Cloudinary. This action receives only URLs,
