@@ -46,6 +46,14 @@ export type CreateListingResult =
 	| Listing
 	| { ok: false; reason: "rate_limited"; retryAfterSeconds: number }
 
+type UploadSignatureResult = {
+	cloudName: string
+	apiKey: string
+	publicId: string
+	signature: string
+	timestamp: string
+}
+
 const adminSupabase = () => {
 	if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null
 	return createServiceRoleClient()
@@ -53,12 +61,13 @@ const adminSupabase = () => {
 
 export async function createCloudinaryUploadSignature(): Promise<UploadSignatureResult> {
 	const { userId } = await auth()
-	if (!userId) return { ok: false, reason: "unauthenticated" }
+	if (!userId) throw new Error("You must be signed in to upload photos.")
 
+	// Admin exemption
 	if (!(await isAdmin())) {
-		const rl = await checkRateLimit("signUpload", userId)
-		if (!rl.ok) {
-			return { ok: false, reason: "rate_limited", retryAfterSeconds: rl.retryAfterSeconds }
+		const rateLimit = await checkRateLimit("signUpload", userId)
+		if (!rateLimit.ok) {
+			throw new Error(`Rate limited. Try again in ${rateLimit.retryAfterSeconds} seconds.`)
 		}
 	}
 
@@ -66,7 +75,7 @@ export async function createCloudinaryUploadSignature(): Promise<UploadSignature
 	const apiKey = process.env.CLOUDINARY_API_KEY
 	const apiSecret = process.env.CLOUDINARY_API_SECRET
 	if (!cloudName || !apiKey || !apiSecret) {
-		return { ok: false, reason: "not_configured" }
+		throw new Error("Image uploads are not configured.")
 	}
 
 	const timestamp = Math.floor(Date.now() / 1000).toString()
@@ -75,8 +84,9 @@ export async function createCloudinaryUploadSignature(): Promise<UploadSignature
 		.update(`public_id=${publicId}&timestamp=${timestamp}${apiSecret}`)
 		.digest("hex")
 
-	return { ok: true, cloudName, apiKey, publicId, signature, timestamp }
+	return { cloudName, apiKey, publicId, signature, timestamp }
 }
+
 export async function createListing(
 	input: ListingFormValues,
 	photoUrls: string[] = [],
