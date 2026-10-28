@@ -31,7 +31,8 @@
 			"availableFrom": "متاح من {date}",
 			"securityDeposit": "مطلوب إيداع تأميني بقيمة {amount} درهم قبل الانتقال.",
 			"noSecurityDeposit": "لا يوجد إيداع تأميني مطلوب.",
-			"verifiedLandlord": "مالك موثق"
+			"verifiedLandlord": "مالك موثق",
+			"amenities": "المرافق"
 		}
 	},
 	"listingCard": {
@@ -76,7 +77,8 @@
 		"rateLimited": {
 			"minutes": "لقد نشرت الكثير من الإعلانات. حاول مرة أخرى خلال {value} دقيقة.",
 			"hours": "لقد نشرت الكثير من الإعلانات. حاول مرة أخرى خلال {value} ساعة."
-		}
+		},
+		"amenities": "المرافق"
 	},
 	"bookmarks": {
 		"noSaved": "لا توجد إعلانات محفوظة",
@@ -208,7 +210,8 @@
 		"max": "الأعلى",
 		"apply": "تطبيق",
 		"clearFilters": "مسح الفلاتر",
-		"listingsFound": "{count, plural, =0 {لا توجد إعلانات} one {إعلان واحد} other {# إعلانات}} تم العثور عليها"
+		"listingsFound": "{count, plural, =0 {لا توجد إعلانات} one {إعلان واحد} other {# إعلانات}} تم العثور عليها",
+		"amenities": "المرافق"
 	},
 	"actions": {
 		"markAsRented": "تعليم كمؤجر",
@@ -228,5 +231,22 @@
 		"madPerMonth": "درهم/شهر",
 		"rooms": "{count, plural, =1 {غرفة واحدة} other {# غرف}}",
 		"loading": "جاري التحميل…"
+	},
+	"amenity": {
+		"wifi": "واي فاي",
+		"parking": "موقف سيارات",
+		"elevator": "مصعد",
+		"balcony": "شرفة",
+		"air_conditioning": "تكييف",
+		"heating": "تدفئة",
+		"terrace": "تراس",
+		"garden": "حديقة",
+		"security": "أمان",
+		"concierge": "خدمة استقبال",
+		"washing_machine": "غسالة ملابس",
+		"equipped_kitchen": "مطبخ مجهز",
+		"tv": "تلفزيون",
+		"near_tram": "قرب الترام",
+		"near_school": "قرب المدرسة"
 	}
 }

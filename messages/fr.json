@@ -31,7 +31,8 @@
 			"availableFrom": "Disponible à partir du {date}",
 			"securityDeposit": "Un dépôt de garantie de {amount} MAD est requis avant l'emménagement.",
 			"noSecurityDeposit": "Aucun dépôt de garantie requis.",
-			"verifiedLandlord": "Propriétaire vérifié"
+			"verifiedLandlord": "Propriétaire vérifié",
+			"amenities": "Équipements"
 		}
 	},
 	"listingCard": {
@@ -76,7 +77,8 @@
 		"rateLimited": {
 			"minutes": "Vous avez publié beaucoup d'annonces. Réessayez dans {value} minute{value, plural, =1 {} other {s}}.",
 			"hours": "Vous avez publié beaucoup d'annonces. Réessayez dans {value} heure{value, plural, =1 {} other {s}}."
-		}
+		},
+		"amenities": "Équipements"
 	},
 	"bookmarks": {
 		"noSaved": "Aucune annonce sauvegardée",
@@ -208,7 +210,8 @@
 		"max": "Max",
 		"apply": "Appliquer",
 		"clearFilters": "Effacer les filtres",
-		"listingsFound": "{count} annonce{count, plural, =1 {} other {s}} trouvée{count, plural, =1 {} other {s}}"
+		"listingsFound": "{count} annonce{count, plural, =1 {} other {s}} trouvée{count, plural, =1 {} other {s}}",
+		"amenities": "Équipements"
 	},
 	"actions": {
 		"markAsRented": "Marquer comme loué",
@@ -228,5 +231,22 @@
 		"madPerMonth": "MAD/mois",
 		"rooms": "{count, plural, =1 {1 chambre} other {# chambres}}",
 		"loading": "Chargement…"
+	},
+	"amenity": {
+		"wifi": "Wi-Fi",
+		"parking": "Parking",
+		"elevator": "Ascenseur",
+		"balcony": "Balcon",
+		"air_conditioning": "Climatisation",
+		"heating": "Chauffage",
+		"terrace": "Terrasse",
+		"garden": "Jardin",
+		"security": "Sécurité",
+		"concierge": "Conciergerie",
+		"washing_machine": "Machine à laver",
+		"equipped_kitchen": "Cuisine équipée",
+		"tv": "Télévision",
+		"near_tram": "Proche du tram",
+		"near_school": "Proche de l'école"
 	}
 }

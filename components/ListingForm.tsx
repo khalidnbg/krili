@@ -28,6 +28,7 @@ import PhotoUploader, { PhotoUploaderState } from "./PhotoUploader"
 import { useState } from "react"
 import { Textarea } from "./ui/textarea"
 import { useTranslations } from "next-intl"
+import AmenitySelector from "./AmenitySelector"
 
 const inputClass = "rounded-xl border-neutral-200"
 
@@ -62,6 +63,7 @@ const ListingForm = () => {
 			furnished: false,
 			petFriendly: false,
 			availableFrom: "",
+			amenities: [],
 		},
 	})
 	const hasCaution = useWatch({ control: form.control, name: "hasCaution" })
@@ -277,6 +279,17 @@ const ListingForm = () => {
 							className={inputClass} {...form.register("bathrooms")} />
 					</Field>
 				</div>
+
+				<Field>
+					<FieldLabel className="text-neutral-700">{t("amenities")}</FieldLabel>
+					<Controller
+						control={form.control}
+						name="amenities"
+						render={({ field }) => (
+							<AmenitySelector value={field.value} onChange={field.onChange} />
+						)}
+					/>
+				</Field>
 
 				<Field>
 					<FieldLabel className="flex cursor-pointer items-center gap-2 text-neutral-700">

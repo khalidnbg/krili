@@ -11,6 +11,8 @@ import ReportListingButton from "@/components/ReportListingButton"
 import { getTranslations } from "next-intl/server"
 import { Suspense } from "react"
 import ListingDetailLoading from "./loading"
+import { Check } from "lucide-react"
+import Image from "next/image"
 
 const Page = async ({ params }: { params: Promise<{ id: string; locale: string }> }) => {
   return (
@@ -24,13 +26,14 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
   const { id, locale } = await params
   const { userId } = await auth()
   const t = await getTranslations("listings.detail")
+  const tAmenity = await getTranslations("amenity")
 
   const supabase = createSupabaseClient()
 
   const { data: row } = await supabase
     .from("listings")
     .select(`
-    id, landlord_id, status, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly,
+    id, landlord_id, status, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, amenities,
     available_from, description, has_caution, caution_amount, property_type,
     neighborhoods(city, name), listing_photos(url, sort_order, is_cover)
   `)
@@ -142,6 +145,25 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
               <p className="max-w-2xl text-lg text-neutral-700">{listing.description}</p>
             )}
 
+            {listing.amenities && listing.amenities.length > 0 && (
+              <div className="flex flex-col gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900">{t("amenities")}</h3>
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {listing.amenities.map((amenity) => (
+                    <li
+                      key={amenity}
+                      className="flex items-center gap-3 rounded-2xl border border-neutral-200/80 bg-neutral-50/60 px-4 py-3 text-sm font-medium text-neutral-800 transition-colors hover:border-[#FE5933]/40 hover:bg-[#FE5933]/5"
+                    >
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#FE5933]/10 text-[#FE5933]">
+                        <Check className="size-4" strokeWidth={3} />
+                      </span>
+                      <span className="leading-tight">{tAmenity(amenity)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {listing.availableFrom && (
               <p className="text-sm text-neutral-500">
                 {t("availableFrom", { date: new Date(`${listing.availableFrom}T00:00:00`).toLocaleDateString(locale === "fr" ? "fr-FR" : "ar-MA", { day: "numeric", month: "long", year: "numeric" }) })}
@@ -157,9 +179,11 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-neutral-200/80 p-6">
               <div className="flex items-center gap-3">
                 {listing.landlordAvatar ? (
-                  <img
+                  <Image
                     src={listing.landlordAvatar}
                     alt={listing.landlordName}
+                    width={48}
+                    height={48}
                     className="size-12 shrink-0 rounded-full bg-neutral-900 object-cover"
                   />
                 ) : (

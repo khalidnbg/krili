@@ -26,6 +26,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import { cities, propertyTypes } from "@/constants"
+import AmenitySelector from "./AmenitySelector"
 
 const inputClass = "rounded-xl border-neutral-200"
 
@@ -61,6 +62,7 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 				furnished: managed.furnished ?? false,
 				petFriendly: managed.petFriendly ?? false,
 				availableFrom: managed.availableFrom ?? "",
+				amenities: (managed.amenities ?? []) as z.infer<typeof listingSchema>["amenities"],
 			}
 			: undefined,
 	})
@@ -224,6 +226,17 @@ const EditListingForm = ({ managed }: EditListingFormProps) => {
 							aria-invalid={!!form.formState.errors.bathrooms}
 							className={inputClass}
 							{...form.register("bathrooms")}
+						/>
+					</Field>
+
+					<Field>
+						<FieldLabel className="text-neutral-700">Amenities</FieldLabel>
+						<Controller
+							control={form.control}
+							name="amenities"
+							render={({ field }) => (
+								<AmenitySelector value={field.value} onChange={field.onChange} />
+							)}
 						/>
 					</Field>
 				</div>

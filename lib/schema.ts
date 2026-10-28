@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { propertyTypes } from "@/constants"
+import { amenityOptions, propertyTypes } from "@/constants"
 
 export const listingSchema = z.object({
 	title: z.string().min(1, { message: "Title is required." }),
@@ -16,6 +16,7 @@ export const listingSchema = z.object({
 	furnished: z.boolean(),
 	petFriendly: z.boolean(),
 	availableFrom: z.string().optional(),
+	amenities: z.array(z.enum(amenityOptions)).max(amenityOptions.length),
 })
 
 export type ListingFormValues = z.infer<typeof listingSchema>
@@ -27,3 +28,4 @@ export const reportSchema = z.object({
 })
 
 export type ReportFormValues = z.infer<typeof reportSchema>
+

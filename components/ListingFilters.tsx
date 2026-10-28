@@ -11,12 +11,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { cities, propertyTypes } from "@/constants"
+import { Amenity, amenityOptions, cities, propertyTypes } from "@/constants"
 import { useTranslations } from "next-intl"
+import AmenitySelector from "./AmenitySelector"
 
 interface ListingFiltersProps {
 	searchParams?: Record<string, string | undefined>
-	resultCount?: number
+	resultCount?: number,
 }
 
 const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
@@ -28,8 +29,13 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 	const [minPrice, setMinPrice] = useState(searchParams?.minPrice ?? "")
 	const [maxPrice, setMaxPrice] = useState(searchParams?.maxPrice ?? "")
 	const [rooms, setRooms] = useState(searchParams?.rooms ?? "")
+	const [amenities, setAmenities] = useState<Amenity[]>(
+		searchParams?.amenities
+			? searchParams.amenities.split(",").filter((a): a is Amenity => amenityOptions.includes(a as Amenity))
+			: []
+	)
 
-	const apply = (next: { city?: string; type?: string; rooms?: string } = {}) => {
+	const apply = (next: { city?: string; type?: string; rooms?: string, amenities?: Amenity[] } = {}) => {
 		const params = new URLSearchParams()
 		const add = (key: string, value: string | undefined) => {
 			if (value) params.set(key, value)
@@ -39,6 +45,9 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 		add("rooms", next.rooms ?? rooms)
 		add("minPrice", minPrice)
 		add("maxPrice", maxPrice)
+		if ((next.amenities ?? amenities).length > 0) {
+			params.set("amenities", (next.amenities ?? amenities).join(","))
+		}
 
 		const qs = params.toString()
 		router.push(qs ? `/listings?${qs}` : "/listings")
@@ -50,6 +59,7 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 		setRooms("")
 		setMinPrice("")
 		setMaxPrice("")
+		setAmenities([])
 		router.push("/listings")
 	}
 
@@ -155,6 +165,31 @@ const ListingFilters = ({ searchParams, resultCount }: ListingFiltersProps) => {
 					</Button>
 				</div>
 			</label>
+
+			{amenities.length > 0 && (
+				<div className="flex items-center gap-2 text-sm font-medium text-neutral-500">
+					<span>{t("amenities")}</span>
+					<span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-[#FE5933]">
+						{amenities.length}
+					</span>
+				</div>
+			)}
+
+			<div className="w-full border-t border-neutral-200 pt-4">
+				<div className="flex flex-col gap-2">
+					<span className="text-sm font-medium text-neutral-700">{t("amenities")}</span>
+					<AmenitySelector
+						value={amenities}
+						onChange={(next) => {
+							const validAmenities = next.filter(
+								(amenity): amenity is Amenity => amenityOptions.includes(amenity as Amenity)
+							)
+							setAmenities(validAmenities)
+							apply({ amenities: validAmenities })
+						}}
+					/>
+				</div>
+			</div>
 
 			<Button
 				type="button"

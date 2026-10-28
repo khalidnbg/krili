@@ -16,20 +16,20 @@ export const propertyColors: Record<PropertyType, string> = {
 
 export const cities = [
 	"casablanca",
-	"rbat",
+	"rabat",
 	"marrakech",
 	"fez",
 	"tangier",
-	"aadir",
+	"agadir",
 ] as const
 
 export const cityKeys: Record<(typeof cities)[number], string> = {
 	casablanca: "city.casablanca",
-	rbat: "city.rbat",
+	rabat: "city.rabat",
 	marrakech: "city.marrakech",
 	fez: "city.fez",
 	tangier: "city.tangier",
-	aadir: "city.aadir",
+	agadir: "city.agadir",
 }
 
 export const neighborhoods = [
@@ -251,3 +251,41 @@ export const reportReasons = [
 	{ value: "offensive", labelKey: "reports.reasonOffensive" },
 	{ value: "other", labelKey: "reports.reasonOther" },
 ] as const
+
+export const amenityOptions = [
+	"wifi",
+	"parking",
+	"elevator",
+	"balcony",
+	"air_conditioning",
+	"heating",
+	"terrace",
+	"garden",
+	"security",
+	"concierge",
+	"washing_machine",
+	"equipped_kitchen",
+	"tv",
+	"near_tram",
+	"near_school",
+] as const
+
+export type Amenity = (typeof amenityOptions)[number]
+
+export const amenityLabels: Record<Amenity, string> = {
+	wifi: "amenity.wifi",
+	parking: "amenity.parking",
+	elevator: "amenity.elevator",
+	balcony: "amenity.balcony",
+	air_conditioning: "amenity.air_conditioning",
+	heating: "amenity.heating",
+	terrace: "amenity.terrace",
+	garden: "amenity.garden",
+	security: "amenity.security",
+	concierge: "amenity.concierge",
+	washing_machine: "amenity.washing_machine",
+	equipped_kitchen: "amenity.equipped_kitchen",
+	tv: "amenity.tv",
+	near_tram: "amenity.near_tram",
+	near_school: "amenity.near_school",
+}

@@ -6,6 +6,7 @@ import { fetchListings } from "@/lib/actions/listing.action"
 import { getTranslations } from "next-intl/server"
 import { Suspense } from "react"
 import ListingsLoading from "./loading"
+import { Amenity, amenityOptions } from "@/constants"
 
 const ListingsContent = async ({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) => {
   const { locale } = await params
@@ -34,7 +35,15 @@ const ListingsContent = async ({ searchParams, params }: { searchParams: SearchP
   const page = Math.max(1, num("page") ?? 1)
   const pageSize = 9
 
-  const result = await fetchListings({ page, pageSize, city, type: propertyType, minPrice, maxPrice, rooms })
+  const amenitiesParam = str("amenities")
+  const amenities = amenitiesParam
+    ? amenitiesParam.split(",").filter((a): a is string => {
+      const valid = amenityOptions.includes(a as Amenity)
+      return valid
+    })
+    : undefined
+
+  const result = await fetchListings({ page, pageSize, city, type: propertyType, minPrice, maxPrice, rooms, amenities })
 
   const listings = result?.listings ?? []
   const total = result?.total ?? 0
@@ -52,7 +61,7 @@ const ListingsContent = async ({ searchParams, params }: { searchParams: SearchP
       </section>
 
       <ListingFilters
-        searchParams={{ city, type: propertyType, minPrice: str("minPrice"), maxPrice: str("maxPrice"), rooms: str("rooms") }}
+        searchParams={{ city, type: propertyType, minPrice: str("minPrice"), maxPrice: str("maxPrice"), rooms: str("rooms"), amenities: amenitiesParam }}
         resultCount={total}
       />
 

@@ -37,7 +37,8 @@ export interface FetchListingsParams {
 	type?: string
 	minPrice?: number
 	maxPrice?: number
-	rooms?: number
+	rooms?: number,
+	amenities?: string[]
 }
 
 export type AdminActionResult = { ok: boolean; error?: string }
@@ -173,6 +174,7 @@ export async function createListing(
 			description: parsed.data.description ?? "",
 			has_caution: parsed.data.hasCaution,
 			caution_amount: parsed.data.hasCaution ? parsed.data.cautionAmount : null,
+			amenities: Array.from(new Set(parsed.data.amenities ?? [])),
 		})
 		.select()
 		.single();
@@ -232,6 +234,7 @@ export const fetchListings = async ({
 	minPrice,
 	maxPrice,
 	rooms,
+	amenities,
 }: FetchListingsParams = {}) => {
 	const from = (page - 1) * pageSize
 	const to = page * pageSize - 1
@@ -239,7 +242,7 @@ export const fetchListings = async ({
 	let query = createSupabaseClient()
 		.from("listings")
 		.select(
-			"id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, available_from, description, has_caution, caution_amount, property_type, neighborhoods!inner(city, name), listing_photos(url, sort_order, is_cover)",
+			"id, landlord_id, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, available_from, description, has_caution, caution_amount, property_type, amenities, neighborhoods!inner(city, name), listing_photos(url, sort_order, is_cover)",
 			{ count: "exact" }
 		)
 		.eq("status", "published")
@@ -250,15 +253,24 @@ export const fetchListings = async ({
 	if (minPrice !== undefined && !Number.isNaN(minPrice)) query = query.gte("price_mad", minPrice)
 	if (maxPrice !== undefined && !Number.isNaN(maxPrice)) query = query.lte("price_mad", maxPrice)
 	if (rooms !== undefined && !Number.isNaN(rooms)) query = query.gte("rooms", rooms)
-	// City now filters in SQL — pagination math is correct again.
-	if (city) query = query.eq("neighborhoods.city", city)
+	if (amenities?.length) query = query.contains("amenities", amenities)
 
+	if (type) query = query.ilike("property_type", type)
+	if (city) query = query.ilike("neighborhoods.city", city)
 
 	const { data, error, count } = await query
 
-	if (error || !data?.length) {
-		console.error("fetchListings failed:", error?.message)
+	if (error) {
+		console.error("fetchPublishedListingsFromDB failed:", error?.message)
 		return null
+	}
+
+	// Return empty result set when no listings match (valid case)
+	if (!data?.length) {
+		return {
+			listings: [],
+			total: 0,
+		}
 	}
 
 	const landlords = await getLandlordProfiles(data.map((row) => row.landlord_id))
@@ -268,6 +280,7 @@ export const fetchListings = async ({
 		total: count ?? data.length,
 	}
 }
+/******************************************* */
 
 export const isAdmin = async () => {
 	const user = await currentUser()
@@ -519,6 +532,7 @@ export async function updateManagedListing(id: string, input: ListingFormValues)
 			caution_amount: parsed.data.hasCaution ? parsed.data.cautionAmount : null,
 			status: "pending",
 			rejection_reason: null,
+			amenities: Array.from(new Set(parsed.data.amenities ?? [])),
 		})
 		.eq("id", id)
 		.select("id")
