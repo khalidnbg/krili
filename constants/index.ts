@@ -1,3 +1,21 @@
+import {
+	Wifi,
+	Car,
+	ArrowUpDown,
+	Sun,
+	Snowflake,
+	Flame,
+	TreePine,
+	Flower2,
+	Shield,
+	UserCheck,
+	WashingMachine,
+	ChefHat,
+	Tv,
+	Train,
+	GraduationCap,
+} from "lucide-react"
+
 export const propertyTypes = ["house", "studio", "room", "apartment"] as const
 
 export const propertyTypeKeys: Record<PropertyType, string> = {
@@ -288,4 +306,22 @@ export const amenityLabels: Record<Amenity, string> = {
 	tv: "amenity.tv",
 	near_tram: "amenity.near_tram",
 	near_school: "amenity.near_school",
+}
+
+export const amenityIcons: Record<Amenity, React.ComponentType<{ className?: string }>> = {
+	wifi: Wifi,
+	parking: Car,
+	elevator: ArrowUpDown,
+	balcony: Sun,
+	air_conditioning: Snowflake,
+	heating: Flame,
+	terrace: TreePine,
+	garden: Flower2,
+	security: Shield,
+	concierge: UserCheck,
+	washing_machine: WashingMachine,
+	equipped_kitchen: ChefHat,
+	tv: Tv,
+	near_tram: Train,
+	near_school: GraduationCap,
 }

@@ -148,7 +148,7 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
             {listing.amenities && listing.amenities.length > 0 && (
               <div className="flex flex-col gap-4">
                 <h3 className="text-lg font-semibold text-neutral-900">{t("amenities")}</h3>
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
                   {listing.amenities.map((amenity) => (
                     <li
                       key={amenity}
