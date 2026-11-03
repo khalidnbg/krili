@@ -32,6 +32,12 @@ export async function checkRateLimit(
 	name: LimiterName,
 	userId: string
 ): Promise<{ ok: true } | { ok: false; retryAfterSeconds: number }> {
+
+	if (!redis) {
+		// Redis not configured - allow all requests
+		return { ok: true };
+	}
+
 	try {
 		const { success, reset } = await limiters[name].limit(userId);
 		console.log("Rate limit check for", name, "userId:", userId, "success:", success, "reset:", reset);
