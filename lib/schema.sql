@@ -253,3 +253,13 @@ where status = 'open';
 alter table public.profiles
 add column suspended boolean not null default false;
 create index if not exists profiles_role_idx on public.profiles(role);
+-- Add updated_at column to listings
+alter table public.listings
+add column if not exists updated_at timestamptz not null default now();
+-- Trigger to auto-update updated_at on row changes
+create or replace function public.handle_updated_at() returns trigger as $$ begin new.updated_at = now();
+return new;
+end;
+$$ language plpgsql;
+create trigger set_listings_updated_at before
+update on public.listings for each row execute function public.handle_updated_at();

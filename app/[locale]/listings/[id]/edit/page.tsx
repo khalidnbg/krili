@@ -4,6 +4,13 @@ import { getManagedListing } from "@/lib/actions/listing.action"
 import { Suspense } from "react"
 import ListingEditLoading from "./loading"
 
+export const metadata = {
+	robots: {
+		index: false,
+		follow: false,
+	},
+}
+
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	return (
 		<Suspense fallback={<ListingEditLoading />}>

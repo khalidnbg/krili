@@ -248,5 +248,10 @@
 		"tv": "Télévision",
 		"near_tram": "Proche du tram",
 		"near_school": "Proche de l'école"
+	},
+	"metadata": {
+		"title": "Krili: Location de maisons, studios et chambres au Maroc",
+		"siteName": "Krili",
+		"description": "Trouvez votre logement à louer au Maroc : appartements, studios, maisons et chambres, avec contact direct du propriétaire."
 	}
 }

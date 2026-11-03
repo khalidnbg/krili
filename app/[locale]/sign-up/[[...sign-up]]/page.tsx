@@ -1,5 +1,12 @@
 import { SignUp } from "@clerk/nextjs"
 
+export const metadata = {
+	robots: {
+		index: false,
+		follow: false,
+	},
+}
+
 const page = () => {
 	return (
 		<main className="flex items-center justify-center min-h-screen">

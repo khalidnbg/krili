@@ -1,5 +1,6 @@
+// app/[locale]/listings/[id]/page.tsx
 import Link from "next/link"
-import NotFound from "@/components/NotFound"
+import { notFound } from "next/navigation"
 import PropertyIcon from "@/components/PropertyIcon"
 import { getPropertyColor } from "@/lib/utils"
 import { createSupabaseClient } from "@/lib/supabase"
@@ -13,6 +14,69 @@ import { Suspense } from "react"
 import ListingDetailLoading from "./loading"
 import { Check } from "lucide-react"
 import Image from "next/image"
+import { getPublicListing, ogImageUrl, truncateDescription, siteUrl } from "@/lib/seo"
+import type { Metadata } from "next"
+
+// Generate metadata for published listings
+export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
+  const { id, locale } = await params
+  const tType = await getTranslations("propertyType")
+
+  const listing = await getPublicListing(id)
+
+  // If not found or not published, let notFound() handle it in the page component
+  if (!listing) {
+    return {
+      title: "Not Found",
+      robots: { index: false, follow: false },
+    }
+  }
+
+  const propertyTypeLabel = tType(listing.type)
+  const title = `${listing.title} | ${propertyTypeLabel} à ${listing.neighborhood}, ${listing.city}`
+
+  const description = listing.description
+    ? truncateDescription(listing.description)
+    : `${propertyTypeLabel} de ${listing.rooms} pièces à ${listing.neighborhood}, ${listing.city}: ${listing.price.toLocaleString()} MAD/mois. ${listing.beds} ch., ${listing.bathrooms} sdb.`
+
+  const coverPhoto = listing.photos?.find(p => p.is_cover)?.url || listing.photos?.[0]?.url
+  const ogImage = coverPhoto ? ogImageUrl(coverPhoto) : `${siteUrl()}/opengraph-image?locale=${locale}`
+
+  const canonical = `/${locale}/listings/${id}`
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}/listings/${id}`,
+      languages: {
+        fr: `/fr/listings/${id}`,
+        ar: `/ar/listings/${id}`,
+        "x-default": `/fr/listings/${id}`,
+      },
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `${siteUrl()}${canonical}`,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+  }
+}
 
 const Page = async ({ params }: { params: Promise<{ id: string; locale: string }> }) => {
   return (
@@ -28,39 +92,39 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
   const t = await getTranslations("listings.detail")
   const tAmenity = await getTranslations("amenity")
 
-  const supabase = createSupabaseClient()
+  // Try public listing first (anon client, published only)
+  let listing = await getPublicListing(id)
+  let isPublished = true
 
-  const { data: row } = await supabase
-    .from("listings")
-    .select(`
-    id, landlord_id, status, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, amenities,
-    available_from, description, has_caution, caution_amount, property_type,
-    neighborhoods(city, name), listing_photos(url, sort_order, is_cover)
-  `)
-    .eq("id", id)
-    .maybeSingle()
+  // If not published, check if user is the owner (for preview)
+  if (!listing && userId) {
+    const supabase = createSupabaseClient()
+    const { data: row } = await supabase
+      .from("listings")
+      .select(`
+				id, landlord_id, status, title, price_mad, rooms, beds, bathrooms, furnished, pet_friendly, amenities,
+				available_from, description, has_caution, caution_amount, property_type,
+				neighborhoods(city, name), listing_photos(url, sort_order, is_cover)
+			`)
+      .eq("id", id)
+      .eq("landlord_id", userId)
+      .maybeSingle()
 
-  let listing: Listing | undefined
-
-  if (row) {
-    const profile = (await getLandlordProfiles([row.landlord_id]))[row.landlord_id]
-    listing = mapListingRow(row, profile)
-  } else {
-    listing = undefined
+    if (row) {
+      const profile = (await getLandlordProfiles([row.landlord_id]))[row.landlord_id]
+      listing = mapListingRow(row, profile)
+      isPublished = row.status === "published"
+    }
   }
 
+  // Real 404 for non-existent or inaccessible listings
   if (!listing) {
-    return (
-      <main>
-        <NotFound />
-      </main>
-    )
+    notFound()
   }
-
-  const isPublished = row?.status === "published"
 
   let initialRevealed = false
   if (userId && listing) {
+    const supabase = createSupabaseClient()
     const { data: reveal } = await supabase
       .from("contact_reveals")
       .select("id")
@@ -72,6 +136,7 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
 
   let initialReported = false
   if (userId && listing) {
+    const supabase = createSupabaseClient()
     const { data: report } = await supabase
       .from("reports")
       .select("id")
@@ -82,10 +147,52 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
     initialReported = !!report
   }
 
+  // Build JSON-LD structured data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: listing.title,
+    description: listing.description || undefined,
+    url: `${siteUrl()}/${locale}/listings/${listing.id}`,
+    image: listing.photos?.slice(0, 5).map(p => p.url) || undefined,
+    datePosted: listing.photos?.[0]?.url ? undefined : new Date().toISOString(), // Fallback if no created_at in mapped type
+    offers: {
+      "@type": "Offer",
+      price: listing.price,
+      priceCurrency: "MAD",
+      availability: "https://schema.org/InStock",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        price: listing.price,
+        priceCurrency: "MAD",
+        unitText: "MONTH",
+      },
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: listing.city,
+      addressRegion: listing.neighborhood,
+      addressCountry: "MA",
+    },
+    numberOfRooms: listing.rooms,
+    numberOfBedrooms: listing.beds,
+    petsAllowed: listing.petFriendly || undefined,
+    amenityFeature: listing.amenities?.map(a => ({
+      "@type": "LocationFeatureSpecification",
+      name: a,
+    })) || undefined,
+  }
+
   return (
     <main className="flex flex-col gap-6 px-4 py-10 md:px-8 md:py-14">
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
+
       <Link
-        href="/"
+        href={`/${locale}/listings`}
         className="w-fit rounded-full px-4 py-2 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
       >
         {t("backToListings")}

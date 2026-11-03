@@ -1,3 +1,4 @@
+// app/[locale]/listings/page.tsx
 import Link from "next/link"
 import ListingCard from "@/components/ListingCard"
 import ListingFilters from "@/components/ListingFilters"
@@ -7,6 +8,112 @@ import { getTranslations } from "next-intl/server"
 import { Suspense } from "react"
 import ListingsLoading from "./loading"
 import { Amenity, amenityOptions } from "@/constants"
+import { isValidCity, isValidPropertyType, siteUrl } from "@/lib/seo"
+import type { Metadata } from "next"
+
+export async function generateMetadata({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const searchParamsResolved = await searchParams
+  const t = await getTranslations("listings")
+  const tType = await getTranslations("propertyType")
+  const tCity = await getTranslations("city")
+
+  const str = (key: string) => {
+    const value = searchParamsResolved[key as keyof typeof searchParamsResolved]
+    return typeof value === "string" ? value : ""
+  }
+  const num = (key: string) => {
+    const value = str(key)
+    return value ? Number(value) : undefined
+  }
+
+  const city = str("city")
+  const propertyType = str("type")
+  const minPrice = num("minPrice")
+  const maxPrice = num("maxPrice")
+  const rooms = num("rooms")
+  const page = Math.max(1, num("page") ?? 1)
+  const amenities = str("amenities")
+
+  // Determine if this is an indexable page
+  const hasPriceFilter = minPrice !== undefined || maxPrice !== undefined
+  const hasRoomsFilter = rooms !== undefined
+  const hasAmenitiesFilter = amenities !== ""
+  const isIndexable = !hasPriceFilter && !hasRoomsFilter && !hasAmenitiesFilter
+
+  // Validate city and type against constants
+  const validCity = isValidCity(city) ? city : null
+  const validType = isValidPropertyType(propertyType) ? propertyType : null
+
+  // Build title
+  let title: string
+  if (validCity && validType) {
+    title = `${tType(validType)} à louer à ${tCity(validCity)}`
+  } else if (validCity) {
+    title = `Logements à louer à ${tCity(validCity)}`
+  } else if (validType) {
+    title = `${tType(validType)} à louer au Maroc`
+  } else {
+    title = t("title")
+  }
+
+  // Add page number to title if beyond page 1
+  if (page > 1) {
+    title += ` - Page ${page}`
+  }
+
+  // Build description
+  let description: string
+  if (validCity) {
+    description = `Trouvez des ${validType ? tType(validType).toLowerCase() : "logements"} à louer à ${tCity(validCity)}. Contact direct avec les propriétaires.`
+  } else {
+    description = t("subtitle")
+  }
+
+  // Build canonical URL
+  let canonical = `/${locale}/listings`
+  const queryParams = new URLSearchParams()
+
+  if (isIndexable) {
+    // Only include city and type in canonical for indexable pages
+    if (validCity) queryParams.set("city", validCity)
+    if (validType) queryParams.set("type", validType)
+    if (page > 1) queryParams.set("page", page.toString())
+  } else {
+    // For non-indexable pages, canonical points to nearest indexable base
+    if (validCity) queryParams.set("city", validCity)
+    if (validType) queryParams.set("type", validType)
+  }
+
+  if (queryParams.toString()) {
+    canonical += `?${queryParams.toString()}`
+  }
+
+  // Build alternates for i18n
+  const alternates: Metadata["alternates"] = {
+    canonical,
+    languages: {
+      fr: canonical.replace(`/${locale}/`, "/fr/"),
+      ar: canonical.replace(`/${locale}/`, "/ar/"),
+      "x-default": canonical.replace(`/${locale}/`, "/fr/"),
+    },
+  }
+
+  return {
+    title,
+    description,
+    alternates,
+    robots: isIndexable
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `${siteUrl()}${canonical}`,
+    },
+  }
+}
 
 const ListingsContent = async ({ searchParams, params }: { searchParams: SearchParams; params: Promise<{ locale: string }> }) => {
   const { locale } = await params

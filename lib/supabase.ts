@@ -18,6 +18,13 @@ export const createSupabaseClient = () => {
 	)
 }
 
+// Anonymous client for SEO paths (no auth, RLS ensures only published listings are exposed)
+export const createAnonSupabaseClient = () => {
+	return createClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+	)
+}
 
 export const createServiceRoleClient = () => {
 	// Bypasses RLS — never expose this key publicly.

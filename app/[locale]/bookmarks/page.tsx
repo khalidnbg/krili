@@ -8,6 +8,13 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import BookmarksLoading from "./loading";
 
+export const metadata = {
+	robots: {
+		index: false,
+		follow: false,
+	},
+}
+
 type EmbeddedNeighborhood = { city?: string; name?: string }
 
 async function BookmarksContent() {

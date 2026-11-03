@@ -1,13 +1,15 @@
+// app/[locale]/layout.tsx
 import type { Metadata } from "next";
 import "../globals.css";
 import { Bricolage_Grotesque, Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { ensureProfile } from "@/lib/actions/profile";
 import { isAdmin } from "@/lib/admin";
+import { siteUrl } from "@/lib/seo";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -18,10 +20,34 @@ const bricolage = Bricolage_Grotesque({
 
 const locales = ["fr", "ar"];
 
-export const metadata: Metadata = {
-	title: "Krili — Houses, Studios & Rooms for Rent",
-	description: "Find and post house, studio and room rental listings across Morocco.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+	const { locale } = await params
+	const t = await getTranslations("metadata")
+
+	const localeCode = locale === "ar" ? "ar_MA" : "fr_MA"
+
+	return {
+		metadataBase: new URL(siteUrl()),
+		title: {
+			default: t("title"),
+			template: "%s | " + t("siteName"),
+		},
+		description: t("description"),
+		applicationName: t("siteName"),
+		openGraph: {
+			type: "website",
+			siteName: t("siteName"),
+			locale: localeCode,
+		},
+		twitter: {
+			card: "summary_large_image",
+		},
+		robots: {
+			index: true,
+			follow: true,
+		},
+	}
+}
 
 export default async function LocaleLayout({
 	children,
