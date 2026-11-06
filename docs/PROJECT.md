@@ -57,6 +57,7 @@ components/
   ListingPhotoGallery.tsx       Portrait cover left + thumbs right (laptop)
   ContactReveal.tsx             Contact button → phone + WhatsApp
   BookmarkButton.tsx            Save/unsave toggle
+    ShareListingButton.tsx       Share listing (native on mobile, menu on desktop)
   DeleteListingButton.tsx       Delete with confirm
   ReportListingButton.tsx       Report a listing (reason + optional details)
   NotFound.tsx / PropertyIcon.tsx
@@ -142,6 +143,8 @@ constants/index.ts              propertyTypes, cities, neighborhoods, sample dat
 **Admin flow** 14. Moderation queue `/admin` — reject with reason, approve (`status → published`); service-role reads.
 
 **Identity** 15. Landlord profiles — Clerk first/last name + avatar synced to `profiles` (`ensureProfile`); shown on detail page via `getLandlordProfiles`.
+
+**Sharing** 19. Share button on listing detail page — native Web Share API on mobile (WhatsApp, Instagram, SMS), popup menu on desktop (WhatsApp, Facebook, Telegram, Email, Copy link); canonical production URL computed server-side; clipboard copy with fallback for non-HTTPS; i18n support (FR/AR); hidden on non-published listings.
 
 **Reporting & trust** 16. Reports — tenant reports a **published** listing (reason dropdown + optional details, `reportSchema`, `reports.action.ts`); admin queue shows only `open` reports with listing context. 17. Report resolution — admin **Resolve** (report-only) or **Resolve & unpublish** (sets listing `rejected` with a reason the landlord sees on `/dashboard`), or **Dismiss**; the row leaves the open queue either way. **Re-reporting** is allowed once a report is no longer open (partial unique index). 18. Reveal counts — `/dashboard` shows per-listing count of distinct tenants who requested contact (`getContactRevealCounts`, owner-scoped by RLS; one row per tenant/listing thanks to `revealContact` idempotency).
 

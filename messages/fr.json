@@ -253,5 +253,16 @@
 		"title": "Krili: Location de maisons, studios et chambres au Maroc",
 		"siteName": "Krili",
 		"description": "Trouvez votre logement à louer au Maroc : appartements, studios, maisons et chambres, avec contact direct du propriétaire."
+	},
+	"share": {
+		"label": "Partager",
+		"text": "{propertyType} à {neighborhood}, {city}: {price} MAD/mois. {title}",
+		"whatsapp": "WhatsApp",
+		"facebook": "Facebook",
+		"telegram": "Telegram",
+		"email": "Email",
+		"copyLink": "Copier le lien",
+		"linkCopied": "Lien copié",
+		"copyFailed": "Impossible de copier, sélectionnez le lien manuellement"
 	}
 }

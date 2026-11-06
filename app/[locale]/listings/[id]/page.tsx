@@ -16,6 +16,7 @@ import { Check } from "lucide-react"
 import Image from "next/image"
 import { getPublicListing, ogImageUrl, truncateDescription, siteUrl } from "@/lib/seo"
 import type { Metadata } from "next"
+import ShareListingButton from "@/components/ShareListingButton"
 
 // Generate metadata for published listings
 export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
@@ -91,9 +92,11 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
   const { userId } = await auth()
   const t = await getTranslations("listings.detail")
   const tAmenity = await getTranslations("amenity")
+  const tType = await getTranslations("propertyType")
 
   // Try public listing first (anon client, published only)
   let listing = await getPublicListing(id)
+  const propertyTypeLabel = listing ? tType(listing.type) : ""
   let isPublished = true
 
   // If not published, check if user is the owner (for preview)
@@ -121,6 +124,8 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
   if (!listing) {
     notFound()
   }
+
+  const canonicalUrl = `${siteUrl()}/${locale}/listings/${listing.id}`
 
   let initialRevealed = false
   if (userId && listing) {
@@ -304,7 +309,19 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
                 </div>
               </div>
 
-              <ContactReveal listingId={listing.id} initialRevealed={initialRevealed} />
+              <div className="flex items-center gap-2">
+                {isPublished && (
+                  <ShareListingButton
+                    url={canonicalUrl}
+                    title={listing.title}
+                    priceMad={listing.price}
+                    city={listing.city}
+                    neighborhood={listing.neighborhood}
+                    propertyTypeLabel={propertyTypeLabel}
+                  />
+                )}
+                <ContactReveal listingId={listing.id} initialRevealed={initialRevealed} />
+              </div>
             </div>
           </div>
 
