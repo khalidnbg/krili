@@ -17,6 +17,9 @@ import Image from "next/image"
 import { getPublicListing, ogImageUrl, truncateDescription, siteUrl } from "@/lib/seo"
 import type { Metadata } from "next"
 import ShareListingButton from "@/components/ShareListingButton"
+import SimilarListingsSkeleton from "@/components/SimilarListingsSkeleton"
+import SimilarListings from "@/components/SimilarListings"
+import { getSavedListingIds } from "@/lib/actions/bookmarks.action"
 
 // Generate metadata for published listings
 export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
@@ -87,6 +90,29 @@ const Page = async ({ params }: { params: Promise<{ id: string; locale: string }
   )
 }
 
+async function SimilarListingsWrapper({
+  listingId,
+  city,
+  propertyType,
+  priceMad,
+  locale,
+}: {
+  listingId: string
+  city: string
+  propertyType: PropertyType
+  priceMad: number
+  locale: string
+}) {
+  const savedIds = new Set(await getSavedListingIds())
+  return (
+    <SimilarListings
+      current={{ id: listingId, city, propertyType, priceMad }}
+      savedIds={savedIds}
+      locale={locale}
+    />
+  )
+}
+
 async function ListingDetailContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params
   const { userId } = await auth()
@@ -124,8 +150,6 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
   if (!listing) {
     notFound()
   }
-
-  const canonicalUrl = `${siteUrl()}/${locale}/listings/${listing.id}`
 
   let initialRevealed = false
   if (userId && listing) {
@@ -331,6 +355,19 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
           )}
         </article>
       </section>
+
+      {/* Similar listings - only for published listings */}
+      {isPublished && (
+        <Suspense fallback={<SimilarListingsSkeleton />}>
+          <SimilarListingsWrapper
+            listingId={listing.id}
+            city={listing.city}
+            propertyType={listing.type}
+            priceMad={listing.price}
+            locale={locale}
+          />
+        </Suspense>
+      )}
     </main>
   )
 }

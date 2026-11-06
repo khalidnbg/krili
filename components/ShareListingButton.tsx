@@ -30,7 +30,7 @@ const ShareListingButton = ({
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
 	// Initialize URL from browser on client side, fallback to prop on server
-	const [currentUrl, setCurrentUrl] = useState(() => {
+	const [currentUrl] = useState(() => {
 		if (typeof window !== "undefined") {
 			return window.location.href
 		}

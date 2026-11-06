@@ -35,6 +35,9 @@
 			"amenities": "المرافق"
 		}
 	},
+	"listing": {
+		"similarTitle": "إعلانات مشابهة"
+	},
 	"listingCard": {
 		"contactLandlord": "اتصل بالمالك",
 		"save": "حفظ",

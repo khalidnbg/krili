@@ -263,3 +263,6 @@ end;
 $$ language plpgsql;
 create trigger set_listings_updated_at before
 update on public.listings for each row execute function public.handle_updated_at();
+-- Index for similar listings query (property_type + price_mad for published listings)
+create index if not exists listings_published_type_price_idx on public.listings (property_type, price_mad)
+where status = 'published';

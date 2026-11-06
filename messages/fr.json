@@ -35,6 +35,9 @@
 			"amenities": "Équipements"
 		}
 	},
+	"listing": {
+		"similarTitle": "Annonces similaires"
+	},
 	"listingCard": {
 		"contactLandlord": "Contacter le propriétaire",
 		"save": "Enregistrer",
