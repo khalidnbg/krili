@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl"
 import { Share2, Check, MessageCircle, Mail, Copy } from "lucide-react"
 
 interface ShareListingButtonProps {
-	url: string
+	url?: string // Optional fallback for SSR
 	title: string
 	priceMad: number
 	city: string
@@ -15,7 +15,7 @@ interface ShareListingButtonProps {
 }
 
 const ShareListingButton = ({
-	url,
+	url: fallbackUrl,
 	title,
 	priceMad,
 	city,
@@ -28,6 +28,14 @@ const ShareListingButton = ({
 	const [copySuccess, setCopySuccess] = useState(false)
 	const [copyError, setCopyError] = useState<string | null>(null)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const [currentUrl, setCurrentUrl] = useState(fallbackUrl || "")
+
+	// Use actual browser URL on client side
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			setCurrentUrl(window.location.href)
+		}
+	}, [])
 
 	const supportsNativeSharing = (url: string) => {
 		if (typeof navigator === "undefined") return false
@@ -40,7 +48,7 @@ const ShareListingButton = ({
 	}
 
 	const [supportsNativeShare] = useState(() =>
-		supportsNativeSharing(url)
+		supportsNativeSharing(currentUrl)
 	)
 
 	// Build share text once
@@ -69,7 +77,7 @@ const ShareListingButton = ({
 			await navigator.share({
 				title,
 				text: shareText,
-				url,
+				url: currentUrl,
 			})
 		} catch (error) {
 			// AbortError = user cancelled, treat as no-op
@@ -88,7 +96,7 @@ const ShareListingButton = ({
 		try {
 			// Try modern Clipboard API first
 			if (navigator.clipboard && navigator.clipboard.writeText) {
-				await navigator.clipboard.writeText(url)
+				await navigator.clipboard.writeText(currentUrl)
 				success = true
 			} else {
 				throw new Error("Clipboard API unavailable")
@@ -97,7 +105,7 @@ const ShareListingButton = ({
 			// Fallback: hidden textarea + execCommand
 			try {
 				const textarea = document.createElement("textarea")
-				textarea.value = url
+				textarea.value = currentUrl
 				textarea.style.position = "fixed"
 				textarea.style.opacity = "0"
 				textarea.style.left = "-9999px"
@@ -124,10 +132,10 @@ const ShareListingButton = ({
 		}
 	}
 
-	const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + " " + url)}`
-	const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
-	const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`
-	const emailUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(shareText + "\n\n" + url)}`
+	const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + " " + currentUrl)}`
+	const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`
+	const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`
+	const emailUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(shareText + "\n\n" + currentUrl)}`
 
 
 	return (
@@ -227,7 +235,7 @@ const ShareListingButton = ({
 									<input
 										type="text"
 										readOnly
-										value={url}
+										value={currentUrl}
 										className="mt-1 w-full rounded border border-border bg-muted px-2 py-1 text-xs"
 										onClick={(e) => e.currentTarget.select()}
 									/>

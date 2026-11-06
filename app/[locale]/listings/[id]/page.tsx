@@ -312,7 +312,6 @@ async function ListingDetailContent({ params }: { params: Promise<{ id: string; 
               <div className="flex items-center gap-2">
                 {isPublished && (
                   <ShareListingButton
-                    url={canonicalUrl}
                     title={listing.title}
                     priceMad={listing.price}
                     city={listing.city}
