@@ -28,14 +28,14 @@ const ShareListingButton = ({
 	const [copySuccess, setCopySuccess] = useState(false)
 	const [copyError, setCopyError] = useState<string | null>(null)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const [currentUrl, setCurrentUrl] = useState(fallbackUrl || "")
 
-	// Use actual browser URL on client side
-	useEffect(() => {
+	// Initialize URL from browser on client side, fallback to prop on server
+	const [currentUrl, setCurrentUrl] = useState(() => {
 		if (typeof window !== "undefined") {
-			setCurrentUrl(window.location.href)
+			return window.location.href
 		}
-	}, [])
+		return fallbackUrl || ""
+	})
 
 	const supportsNativeSharing = (url: string) => {
 		if (typeof navigator === "undefined") return false
@@ -63,7 +63,7 @@ const ShareListingButton = ({
 		}).trim()
 	})()
 
-	// Detect native share support on client only
+	// Cleanup timeout on unmount
 	useEffect(() => {
 		return () => {
 			if (timeoutRef.current) {
